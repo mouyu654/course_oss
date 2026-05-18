@@ -1,0 +1,247 @@
+# 面向专业认证的达成度统一计算平台 - 系统架构设计文档
+
+## 1. 系统架构总体设计
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                    Client Layer (浏览器)                      │
+├─────────────────────────────────────────────────────────────┤
+│  Vue 3 SPA (Frontend)                                       │
+│  ├─ Horizon Portal (登录门户)                               │
+│  ├─ Governance Space (MetaDictionary, NexusRoster)          │
+│  ├─ Blueprint Space (OutcomeBlueprint, MacroMatrix Studio)  │
+│  ├─ Evaluation Space (MicroSyllabus, Assessment, GradeForge)│
+│  └─ Insight Space (Lighthouse Report, TraceLedger)          │
+├─────────────────────────────────────────────────────────────┤
+│                    API Gateway Layer                        │
+│  (FastAPI ASGI Router, CORS, AuthGuard JWT, StateLock)      │
+├─────────────────────────────────────────────────────────────┤
+│              Business Logic Layer (Backend)                 │
+│  FastAPI REST API (Python 3.10+)                            │
+│  ├─ CoreIdentity Service (身份认证与权限服务)               │
+│  ├─ NexusData Service (基础教务与学籍数据服务)              │
+│  ├─ MatrixArchitect Service (宏微观矩阵结构与权重服务)      │
+│  ├─ QuantumEngine (核心算力计算引擎)                        │
+│  │   ├─ Course Objective Level Calculation (Pandas)         │
+│  │   ├─ Course Level Calculation (Vectorized Ops)           │
+│  │   └─ Program Level Calculation (Matrix Dot Product)      │
+│  └─ LighthouseExport Service (流式报表与穿透底稿生成服务)   │
+├─────────────────────────────────────────────────────────────┤
+│                 Data Access & Validation Layer              │
+│  SQLAlchemy 2.0 ORM + Pydantic V2 Strict Validation         │
+├─────────────────────────────────────────────────────────────┤
+│                      Database Layer                         │
+│  MySQL 8.0+ (achievement_calc database)                     │
+│  ├─ Core Tables (基础信息与权限表)                          │
+│  ├─ Relation Tables (双层权重支撑矩阵表)                    │
+│  ├─ Calculation Result Tables (一至三级达成度计算快照)      │
+│  └─ Audit Logs (系统操作与计算溯源日志)                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 2. 核心模块设计
+
+### 2.1 认证授权模块 (CoreIdentity)
+- **技术**: FastAPI Security + OAuth2 (JWT)
+- **功能**: 用户登录认证、基于 Token 的接口防刷、角色权限动态获取
+- **角色**: 系统管理员、教务管理人员、专业负责人、课程主讲教师
+
+### 2.2 基础治理与数据模块 (NexusData)
+- **功能**: 学年学期等全局字典管理、全专业课程库（培养方案）导入、教学班及学籍名单维护
+- **核心操作**: 基于 AnyIO 异步流式读取 Excel 进行批量导入；基于 SQLAlchemy 2.0 的高并发 CRUD
+
+### 2.3 专业与课程设计模块 (MatrixArchitect)
+- **功能**: 毕业要求及二级指标点设计、宏观总支撑权重($W_c$)配置校验、课程目标配置、大纲内部贡献权重($w$)及考核点映射
+- **核心逻辑**: 基于 Pydantic 的多层级严苛校验体系。系统会拦截并阻断任何单一维度下“权重加和不等于 1.0”的脏数据入库请求。
+
+### 2.4 成绩处理与算力引擎 (QuantumEngine)
+- **功能**: 复合表头空模板下发、学生单项原始成绩的高密度前端预览、一/二/三级达成度自动化流式计算
+- **核心机制**: 利用 Pandas / NumPy 进行向量化矩阵点积运算；引入多级事务防并发死锁的“状态机锁定（Lock）”机制。
+
+### 2.5 洞察与台账导出模块 (LighthouseExport)
+- **功能**: 专家视角的达成度雷达图数据组装（配合前端 ECharts）、《课程目标达成情况评价表》PDF/Excel 导出、穿透式全专业台账追溯底稿生成
+- **工具底层**: OpenPyXL (Excel 异步读写)、ReportLab / WeasyPrint (PDF 流式生成)
+
+---
+
+## 3. 前端空间与核心页面设计
+
+系统前端采用 Vue 3 单页应用（SPA）架构，结合 Element Plus 组件库，划分为 5 个核心工作空间，共计 11 个核心业务页面：
+
+### 3.1 接入与公共空间 (Access Space)
+1. **P-1 Horizon Portal (登录门户 - `Login.vue`)**
+   - **描述**: 系统唯一认证入口。支持账户密码登录，登录成功后持久化存储 JWT，并通过角色权限控制策略动态下发并渲染左侧导航菜单路由。
+
+### 3.2 教务治理空间 (Governance Space)
+2. **P-2 MetaDictionary (元数据中心 - `DictConfig.vue`)**
+   - **权限**: `系统管理员`
+   - **描述**: 统管全校级基础字典。包含学年、学期、学院、专业等基础实体数据的标准 CRUD 及状态启用控制。
+3. **P-3 NexusRoster (学籍与课表网关 - `CourseStudentImport.vue`)**
+   - **权限**: `教务管理员`
+   - **描述**: 全专业培养方案课程库及学生学籍名单的初始化中心。提供标准 Excel 模板下载，支持高并发多线程异步导入选课名册。
+4. **P-4 PulseMonitor (全景算力雷达 - `ProgressMonitor.vue`)**
+   - **权限**: `教务管理员` / `专业负责人`
+   - **描述**: 实时进度监控看板。以卡片流形式展示当前学期全专业所有支撑课程的成绩录入与锁定状态（未提交、草稿、已锁定），并作为一键触发“专业级最终计算”的总控台。
+
+### 3.3 专业设计空间 (Blueprint Space)
+5. **P-5 OutcomeBlueprint (毕业要求设计器 - `GraduationRequirements.vue`)**
+   - **权限**: `专业负责人`
+   - **描述**: 毕业要求（一级）与指标点（二级）的结构化编辑器。支持层级树形展示、动态添加、修改指标点编号及详细描述。
+6. **P-6 MacroMatrix Studio (宏观矩阵工坊 - `MacroMatrix.vue`)**
+   - **权限**: `专业负责人`
+   - **描述**: 高密度宏观权重矩阵分配工作台。采用十字高亮、表头及首列冻结的高级 DataGrid。纵轴为课程，横轴为指标点，前端实时拦截并计算列总和，若某指标点下所有课程支撑权重之和 $\sum W_c \neq 1.0$，该列呈现红色预警并禁用保存。
+
+### 3.4 课程评价空间 (Evaluation Space)
+7. **P-7 MyCourse Hub (我的教学空间 - `MyCourses.vue`)**
+   - **权限**: `课程主讲教师`
+   - **描述**: 教师个人仪表盘。展示本学期任教的课程教学班卡片，包含当前课程的计算阶段指示器及锁定/解锁状态。
+8. **P-8 MicroSyllabus (大纲微观映射器 - `SyllabusConfig.vue`)**
+   - **权限**: `课程主讲教师`
+   - **描述**: 教学大纲量化映射器。用于录入当前课程的目标，并自动拉取该课程在宏观矩阵中支撑的指标点，建立“课程目标 - 指标点”微观矩阵，配置大纲内部支撑权重（$w$）。
+9. **P-9 Assessment Mapper (考核点追溯板 - `AssessmentMapping.vue`)**
+   - **权限**: `课程主讲教师`
+   - **描述**: 考核点绑定配置页。教师在此动态拆分考核结构（如期末考试大题1、实验报告2），设定分值并将每个考核点硬绑定到唯一的课程目标上。
+10. **P-10 GradeForge (动态成绩工场 - `GradeEntry.vue`)**
+    - **权限**: `课程主讲教师`
+    - **描述**: 数据录入与一键点火计算核心页。支持根据绑定的考核点动态组装复合表头 Excel 导出。上传成绩后激活 Web Excel 预览网关，高亮显示异常值及空缺值，支持手动在线微调；点击“确认并一键计算”后触发后端计算引擎并锁定该课程。
+
+### 3.5 洞察台账空间 (Insight Space)
+11. **P-11 TraceLighthouse (洞察报表与穿透台账页 - `ReportView.vue`)**
+    - **权限**: `课程主讲教师` / `专业负责人`
+    - **描述**: 认证结果透视中心。集成 ECharts 渲染专业的毕业要求达成度雷达图；支持“穿透式”台账点击下钻，从顶层指标点得分一路逆向解构，穿透至对应课程、课程目标乃至考核项平均得分率。
+
+---
+
+## 4. 后端核心 API 详细设计
+
+后端基于 FastAPI 构建，利用 Pydantic V2 严格规范请求与响应的 JSON 实体，核心规划 16 个 RESTful API：
+
+### 4.1 CoreIdentity 身份认证模块
+- **API-1: 用户登录凭证签发**
+  - `POST /api/v1/identity/token`
+  - **说明**: 验证账户密码，签发包含用户ID与角色的加密 JWT Bearer Token。
+- **API-2: 动态路由与权限空间查询**
+  - `GET /api/v1/identity/profile`
+  - **说明**: 解析 Token 返回用户档案及菜单可访问空间列表。
+
+### 4.2 NexusData 基础数据模块
+- **API-3: 批量导入专业课程图谱**
+  - `POST /api/v1/nexus/courses/import`
+  - **说明**: 接收 Excel 文件流，通过 OpenPyXL 流式写入课程基础表。
+- **API-4: 导入教学班选课名单**
+  - `POST /api/v1/nexus/students/import`
+  - **说明**: 绑定 `class_id`，异步解析并初始化学生关联快照。
+- **API-5: 获取元数据字典**
+  - `GET /api/v1/nexus/dictionary/{dict_type}`
+  - **说明**: 高频基础字典查询接口。
+
+### 4.3 MatrixArchitect 结构与权重模块
+- **API-6: 批量提交毕业要求指标点配置**
+  - `POST /api/v1/architect/indicators`
+  - **说明**: 固化专业毕业要求一/二级结构。
+- **API-7: 拉取专业宏观总支撑矩阵**
+  - `GET /api/v1/architect/macro-matrix/{major_id}`
+  - **说明**: 联表查询并返回多维矩阵 JSON 用于前端网格渲染。
+- **API-8: 固化宏观支撑矩阵权重**
+  - `PUT /api/v1/architect/macro-matrix`
+  - **说明**: **核心数学校验拦截**。Pydantic 强制校验某 `indicator_id` 的所有课程支撑权重之和必须严格为 `1.0`。
+- **API-9: 存储课程大纲内部微观权重体系**
+  - `POST /api/v1/architect/micro-syllabus/{course_id}`
+  - **说明**: 教师保存课程目标与指标点映射，严格校验内部权重之和。
+- **API-10: 绑定固化考核点细分映射表**
+  - `POST /api/v1/architect/assessments/{course_id}`
+  - **说明**: 写入具体考核项结构及对应的课程目标归属。
+
+### 4.4 QuantumEngine 核心算力引擎模块
+- **API-11: 动态组装成绩录入模板**
+  - `GET /api/v1/forge/template/{course_id}`
+  - **说明**: 流式下发带双层复合表头（考核名称+满分分值）的空 Excel 模板。
+- **API-12: 成绩 Excel 解析与预校验**
+  - `POST /api/v1/forge/preview/{course_id}`
+  - **说明**: 提取数据、扫描空缺值，返回前端预览所需的 JSON。
+- **API-13: 暂存成绩草稿数据**
+  - `PUT /api/v1/forge/draft/{course_id}`
+  - **说明**: 允许将 Web 成绩表格数据存为暂存状态。
+- **API-14: 触发课程级点火计算 (一、二级计算)**
+  - `POST /api/v1/quantum/trigger-course/{course_id}`
+  - **说明**: **算力触发阶段一**。加载学生成绩矩阵，由 Pandas 引擎进行向量运算得出目标达成度，进而加权聚合出课程达成度，随后固化状态为 `LOCKED`。
+- **API-15: 触发全局专业级最终汇聚 (三级计算)**
+  - `POST /api/v1/quantum/trigger-program/{major_id}`
+  - **说明**: **算力触发阶段二**。校验所有下级课程均已锁定后，提取二级达成度与宏观矩阵权重执行 NumPy 矩阵点积，得出专业最终得分。
+
+### 4.5 LighthouseExport 报表与底稿输出模块
+- **API-16: 导出单门课程达成度评价报告**
+  - `GET /api/v1/lighthouse/course-eval/{course_id}`
+  - **说明**: 提取计算快照，组装标准 PDF/Word 报告流下载。
+- **API-17: 生成认证专家审阅穿透式台账**
+  - `GET /api/v1/lighthouse/ledger/{major_id}`
+  - **说明**: **终极溯源出口**。动态生成内嵌关联公式的多 Sheet 活表格，支持从顶层一层层追溯至考核点。
+
+---
+
+## 5. 技术栈概览
+
+| 层级 | 核心技术选型 | 版本建议 |
+| :--- | :--- | :--- |
+| **前端展现层** | Vue.js | 3.3+ |
+| **前端组件库** | Element Plus | 2.5.0+ |
+| **后端 Web 框架** | FastAPI | 0.100+ |
+| **数据算力内核** | Pandas / NumPy | 2.0+ |
+| **后端 ORM 框架** | SQLAlchemy | 2.0+ |
+| **数据模型与校验** | Pydantic | 2.4+ |
+| **核心数据库** | MySQL | 8.0+ |
+| **流式文件处理** | OpenPyXL / AnyIO | 3.1+ |
+| **底层运行环境** | Python | 3.10+ |
+
+---
+
+## 6. 核心数据流向
+
+```text
+【步骤 1】: 原始考评成绩 (Excel) 上传导入 
+    ↓
+【步骤 2】: AnyIO 异步解析与 Pydantic 数据规范化拦截校验 
+    ↓
+【步骤 3】: QuantumEngine 课程目标级达成度计算 (阶段一点火：基于考核点映射汇总得分率)
+    ↓
+【步骤 4】: QuantumEngine 课程级达成度计算 (阶段一点火：Pandas 加权聚合内部微观权重)
+    ↓
+【步骤 5】: 结果锁定入库 (教师级状态机防篡改拦截器激活)
+    ↓
+【步骤 6】: QuantumEngine 专业级达成度汇总 (阶段二点火：NumPy 矩阵点积宏观支撑权重)
+    ↓
+【步骤 7】: 达成度快照落盘与 Lighthouse 穿透式台账动态组装
+```
+
+---
+
+## 7. 部署架构规划
+
+```text
+【开发与调试环境】
+- 模式: 本地 Docker Compose 容器化编排
+- 组件: MySQL + Redis + FastAPI Uvicorn Server
+
+【局域网/测试环境】
+- 模式: 单服务器集成部署
+
+【生产级别云弹性架构】
+- 前端集群: Nginx 静态资源托管网络与反向代理网关
+- 后端集群: Gunicorn (管理多进程) + Uvicorn (ASGI) 构成的高并发处理节点
+- 数据库层: 采用云原生 MySQL 8.0 主从复制架构保证持久化安全
+```
+
+---
+
+## 8. 系统安全策略设计
+
+- **统一认证机制**: 基于 JWT Bearer Token。结合 Redis 缓存可实现 Token 吊销黑名单以及账户的单点登录互踢管控。
+- **接口授权机制**: 严格的 RBAC 模型。在 FastAPI 路由层使用依赖注入（`Depends`）进行 API 访问鉴权。
+- **核心数据防篡改**: 
+  - 计算过程中的快照强制留存，供后续追溯审核。
+  - 用户密码均使用不可逆加盐哈希（如 bcrypt）存储。
+  - **成绩状态机隔离**：一旦某课程成绩或权重状态被系统标识为 `LOCKED`（锁定），网关层将直接拒绝所有针对该实体的 C/U/D (增改删) 请求，防止审计数据出现幻读污染。
+- **边界防护设计**: 
+  - 全局配置 CORS 跨域白名单限制调用方。
+  - 基于 Pydantic 的严苛输入限制阻断非法字符，防止 XSS/SQL 注入。
+  - 配置基于网关的 API Rate Limiter（限流器）防范恶意刷单行为。
