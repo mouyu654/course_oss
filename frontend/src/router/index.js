@@ -14,6 +14,12 @@ const routes = [
     redirect: '/progress-monitor',
     children: [
       {
+        path: 'user-management',
+        name: 'UserManagement',
+        component: () => import('@/views/UserManagement.vue'),
+        meta: { title: '用户管理', roles: ['admin'] },
+      },
+      {
         path: 'dict-config',
         name: 'DictConfig',
         component: () => import('@/views/DictConfig.vue'),

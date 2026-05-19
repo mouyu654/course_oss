@@ -5,9 +5,6 @@
       <el-menu
         :default-active="currentRoute"
         router
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409EFF"
       >
         <template v-for="item in menuItems" :key="item.path">
           <el-sub-menu v-if="item.children" :index="item.path">
@@ -65,6 +62,7 @@ import {
   DocumentCopy,
   Upload,
   TrendCharts,
+  User,
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -83,6 +81,7 @@ const roleLabel = computed(() => {
 const menuItems = computed(() => {
   const menus = {
     admin: [
+      { path: '/user-management', title: '用户管理', icon: 'User' },
       { path: '/dict-config', title: '元数据中心', icon: 'Setting' },
       { path: '/nexus-roster', title: '学籍课表网关', icon: 'School' },
       { path: '/progress-monitor', title: '全景算力雷达', icon: 'Monitor' },
@@ -123,43 +122,60 @@ function handleLogout() {
   height: 100vh;
 }
 .el-aside {
-  background-color: #304156;
+  background: #f3f4f6;
+  border-right: 1px solid #e5e6eb;
   overflow-y: auto;
 }
 .logo {
-  height: 60px;
-  line-height: 60px;
+  height: 52px;
+  line-height: 52px;
   text-align: center;
-  color: #fff;
-  font-size: 16px;
-  font-weight: bold;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #1d2129;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  background: #ebedf0;
+  border-bottom: 1px solid #e5e6eb;
 }
 .el-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff;
-  border-bottom: 1px solid #e6e6e6;
-  padding: 0 20px;
+  background: #f8f9fb;
+  border-bottom: 1px solid #e5e6eb;
+  padding: 0 24px;
+  height: 48px;
 }
 .header-left .page-title {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d2129;
 }
 .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 .username {
-  color: #606266;
+  color: #4e5969;
+  font-size: 13px;
 }
 .el-main {
-  background: #f0f2f5;
-  padding: 20px;
+  background: #fff;
+  padding: 24px;
 }
 .el-menu {
   border-right: none;
+  background: transparent;
+}
+:deep(.el-menu-item) {
+  color: #4e5969;
+}
+:deep(.el-menu-item.is-active) {
+  color: #165dff;
+  background: rgba(22, 93, 255, 0.06);
+}
+:deep(.el-menu-item:hover) {
+  background: rgba(0, 0, 0, 0.04);
 }
 </style>
