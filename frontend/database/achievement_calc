@@ -1,0 +1,534 @@
+/*
+ Navicat Premium Dump SQL
+
+ Source Server         : DJP
+ Source Server Type    : MySQL
+ Source Server Version : 80046 (8.0.46)
+ Source Host           : localhost:3306
+ Source Schema         : achievement_calc
+
+ Target Server Type    : MySQL
+ Target Server Version : 80046 (8.0.46)
+ File Encoding         : 65001
+
+ Date: 26/05/2026 22:55:08
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for assessment_items
+-- ----------------------------
+DROP TABLE IF EXISTS `assessment_items`;
+CREATE TABLE `assessment_items`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `course_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `objective_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `max_score` decimal(6, 2) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_course`(`course_id` ASC) USING BTREE,
+  INDEX `idx_objective`(`objective_id` ASC) USING BTREE,
+  CONSTRAINT `fk_item_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_item_objective` FOREIGN KEY (`objective_id`) REFERENCES `course_objectives` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of assessment_items
+-- ----------------------------
+INSERT INTO `assessment_items` VALUES ('2025067001', '2025067', '202506701', '在线作业-数据结构基础', 100.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `assessment_items` VALUES ('2025067002', '2025067', '202506701', '期末考试-数据结构理论', 100.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `assessment_items` VALUES ('2025067003', '2025067', '202506702', '实验报告-算法复杂度分析', 100.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `assessment_items` VALUES ('2025067004', '2025067', '202506702', '编程大作业-综合应用', 100.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `assessment_items` VALUES ('2025067005', '2025067', '202506703', '课程论文-数据结构工程实践', 100.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `assessment_items` VALUES ('2025067006', '2025067', '202506703', '答辩展示-创新设计', 100.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `assessment_items` VALUES ('2025071001', '2025071', '202507101', '在线测验-计组基础', 100.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `assessment_items` VALUES ('2025071002', '2025071', '202507101', '期末考试-计组理论', 100.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `assessment_items` VALUES ('2025071003', '2025071', '202507102', 'CPU设计实验', 100.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `assessment_items` VALUES ('2025071004', '2025071', '202507102', '实验报告-运算器设计', 100.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for calculation_results
+-- ----------------------------
+DROP TABLE IF EXISTS `calculation_results`;
+CREATE TABLE `calculation_results`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `course_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `class_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `level` enum('objective','course','program') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `objective_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `indicator_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `achievement_value` decimal(6, 4) NOT NULL,
+  `locked` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_course_class_level`(`course_id` ASC, `class_id` ASC, `level` ASC) USING BTREE,
+  INDEX `idx_level_locked`(`level` ASC, `locked` ASC) USING BTREE,
+  INDEX `idx_indicator`(`indicator_id` ASC) USING BTREE,
+  INDEX `fk_result_class`(`class_id` ASC) USING BTREE,
+  INDEX `fk_result_objective`(`objective_id` ASC) USING BTREE,
+  CONSTRAINT `fk_result_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_result_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_result_indicator` FOREIGN KEY (`indicator_id`) REFERENCES `graduation_indicators` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT,
+  CONSTRAINT `fk_result_objective` FOREIGN KEY (`objective_id`) REFERENCES `course_objectives` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of calculation_results
+-- ----------------------------
+INSERT INTO `calculation_results` VALUES ('40001', '2025067', '2025067001', 'objective', '202506701', NULL, 0.8500, 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `calculation_results` VALUES ('40002', '2025067', '2025067001', 'objective', '202506702', NULL, 0.7825, 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `calculation_results` VALUES ('40003', '2025067', '2025067001', 'objective', '202506703', NULL, 0.7210, 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `calculation_results` VALUES ('40004', '2025067', '2025067001', 'course', NULL, '0101', 0.8500, 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `calculation_results` VALUES ('40005', '2025067', '2025067001', 'course', NULL, '0201', 0.7825, 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `calculation_results` VALUES ('40006', '2025067', '2025067001', 'course', NULL, '0301', 0.7210, 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `calculation_results` VALUES ('40007', '2025071', '2025071001', 'objective', '202507101', NULL, 0.7610, 0, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `calculation_results` VALUES ('40008', '2025067', NULL, 'program', NULL, '0101', 0.8500, 0, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for class_students
+-- ----------------------------
+DROP TABLE IF EXISTS `class_students`;
+CREATE TABLE `class_students`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `class_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `student_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_class_student`(`class_id` ASC, `student_id` ASC) USING BTREE,
+  INDEX `idx_student`(`student_id` ASC) USING BTREE,
+  CONSTRAINT `fk_cs_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_cs_student` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of class_students
+-- ----------------------------
+INSERT INTO `class_students` VALUES ('60001', '2025067001', '202520701201', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60002', '2025067001', '202520701202', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60003', '2025067001', '202520701203', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60004', '2025067001', '202520701204', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60005', '2025067001', '202520701205', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60006', '2025067001', '202520701206', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60007', '2025067001', '202520701207', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60008', '2025067001', '202520701208', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60009', '2025071001', '202520701201', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60010', '2025071001', '202520701202', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60011', '2025071001', '202520701203', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60012', '2025071001', '202520701204', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60013', '2025071001', '202520701205', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60014', '2025071001', '202520701206', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60015', '2025093001', '202520702301', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60016', '2025093001', '202520702302', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60017', '2025093001', '202520702303', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `class_students` VALUES ('60018', '2025093001', '202520702304', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for classes
+-- ----------------------------
+DROP TABLE IF EXISTS `classes`;
+CREATE TABLE `classes`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `course_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `teacher_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `academic_year` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `semester` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_course_id`(`course_id` ASC) USING BTREE,
+  INDEX `idx_teacher`(`teacher_id` ASC) USING BTREE,
+  INDEX `idx_year_sem`(`academic_year` ASC, `semester` ASC) USING BTREE,
+  CONSTRAINT `fk_class_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_class_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of classes
+-- ----------------------------
+INSERT INTO `classes` VALUES ('2025067001', '2025067', '20230623', '2025级数据结构1班', '2025-2026', '1', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `classes` VALUES ('2025067002', '2025067', '20230623', '2025级数据结构2班', '2025-2026', '1', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `classes` VALUES ('2025071001', '2025071', '20230815', '2025级计组1班', '2025-2026', '1', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `classes` VALUES ('2025082001', '2025082', '20230623', '2025级操作系统1班', '2025-2026', '2', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `classes` VALUES ('2025093001', '2025093', '20230815', '2025级软工导论1班', '2025-2026', '2', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for course_objectives
+-- ----------------------------
+DROP TABLE IF EXISTS `course_objectives`;
+CREATE TABLE `course_objectives`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `course_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `dimension` enum('知识维度','能力维度','价值维度') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_course_code`(`course_id` ASC, `code` ASC) USING BTREE,
+  INDEX `idx_course`(`course_id` ASC) USING BTREE,
+  CONSTRAINT `fk_objective_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of course_objectives
+-- ----------------------------
+INSERT INTO `course_objectives` VALUES ('202506701', '2025067', 'OBJ1-1', '掌握线性表、栈、队列、树、图等基本数据结构的逻辑结构与物理存储', '知识维度', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `course_objectives` VALUES ('202506702', '2025067', 'OBJ1-2', '能够分析算法的时间复杂度和空间复杂度，针对具体问题选择合适的数据结构', '能力维度', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `course_objectives` VALUES ('202506703', '2025067', 'OBJ1-3', '培养抽象思维能力和工程化设计思想，树立计算思维解决实际问题的素养', '价值维度', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `course_objectives` VALUES ('202507101', '2025071', 'OBJ2-1', '理解计算机硬件系统组成及冯·诺依曼体系工作原理', '知识维度', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `course_objectives` VALUES ('202507102', '2025071', 'OBJ2-2', '能够设计和分析运算器、控制器等基本部件的逻辑实现', '能力维度', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `course_objectives` VALUES ('202507103', '2025071', 'OBJ2-3', '培养从系统角度理解计算机体系结构的工程思维方式', '价值维度', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `course_objectives` VALUES ('202508201', '2025082', 'OBJ3-1', '掌握进程管理、内存管理、文件系统及设备管理的核心概念与原理', '知识维度', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `course_objectives` VALUES ('202508202', '2025082', 'OBJ3-2', '能够分析并发程序中的同步与互斥问题，设计合理的调度方案', '能力维度', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `course_objectives` VALUES ('202508203', '2025082', 'OBJ3-3', '建立系统思维，理解操作系统在计算机系统中的核心地位与设计权衡', '价值维度', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `course_objectives` VALUES ('202509301', '2025093', 'OBJ4-1', '掌握软件生命周期各阶段的基本概念、模型与方法', '知识维度', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `course_objectives` VALUES ('202509302', '2025093', 'OBJ4-2', '能够运用UML进行需求分析与系统设计，编写规范的软件文档', '能力维度', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `course_objectives` VALUES ('202509303', '2025093', 'OBJ4-3', '培养团队协作意识和软件质量保证的工程伦理观念', '价值维度', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for courses
+-- ----------------------------
+DROP TABLE IF EXISTS `courses`;
+CREATE TABLE `courses`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `credit` decimal(4, 1) NOT NULL,
+  `hours_theory` smallint UNSIGNED NOT NULL DEFAULT 0,
+  `hours_lab` smallint UNSIGNED NOT NULL DEFAULT 0,
+  `college` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `major` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `academic_year` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `semester` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_code`(`code` ASC) USING BTREE,
+  INDEX `idx_major_year`(`major` ASC, `academic_year` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of courses
+-- ----------------------------
+INSERT INTO `courses` VALUES ('2025067', '080900X130B001', '数据结构', 4.0, 48, 16, '计算机学院', '计算机科学与技术', '2025-2026', '1', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `courses` VALUES ('2025071', '080900X130B002', '计算机组成原理', 3.5, 40, 12, '计算机学院', '计算机科学与技术', '2025-2026', '1', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `courses` VALUES ('2025082', '080900X130B003', '操作系统', 3.0, 32, 16, '计算机学院', '计算机科学与技术', '2025-2026', '2', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `courses` VALUES ('2025093', '080900X140B001', '软件工程导论', 2.5, 28, 8, '软件学院', '软件工程', '2025-2026', '2', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for global_config
+-- ----------------------------
+DROP TABLE IF EXISTS `global_config`;
+CREATE TABLE `global_config`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `key` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_category_key`(`category` ASC, `key` ASC) USING BTREE,
+  INDEX `idx_category`(`category` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of global_config
+-- ----------------------------
+INSERT INTO `global_config` VALUES ('80001', 'academic_year', '2024-2025', '2024-2025学年', '已结束学年', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `global_config` VALUES ('80002', 'academic_year', '2025-2026', '2025-2026学年', '当前学年', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `global_config` VALUES ('80003', 'semester', '1', '第一学期', '秋季学期', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `global_config` VALUES ('80004', 'semester', '2', '第二学期', '春季学期', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `global_config` VALUES ('80005', 'college', 'CS', '计算机学院', '计算机科学与技术学院', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `global_config` VALUES ('80006', 'college', 'SE', '软件学院', '软件学院', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `global_config` VALUES ('80007', 'major', 'CST', '计算机科学与技术', '计算机科学与技术专业', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `global_config` VALUES ('80008', 'major', 'SE', '软件工程', '软件工程专业', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for graduation_indicators
+-- ----------------------------
+DROP TABLE IF EXISTS `graduation_indicators`;
+CREATE TABLE `graduation_indicators`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `requirement_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_code`(`code` ASC) USING BTREE,
+  INDEX `idx_requirement`(`requirement_id` ASC) USING BTREE,
+  CONSTRAINT `fk_indicator_requirement` FOREIGN KEY (`requirement_id`) REFERENCES `graduation_requirements` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of graduation_indicators
+-- ----------------------------
+INSERT INTO `graduation_indicators` VALUES ('0101', '01', '1-1', '能够运用数学与自然科学基础知识理解工程问题', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `graduation_indicators` VALUES ('0102', '01', '1-2', '能够运用工程基础知识分析和解决具体工程问题', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `graduation_indicators` VALUES ('0201', '02', '2-1', '能够识别并表达复杂工程问题中的关键环节', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `graduation_indicators` VALUES ('0202', '02', '2-2', '能够通过文献研究分析复杂工程问题的多种解决方案', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `graduation_indicators` VALUES ('0301', '03', '3-1', '能够设计满足特定需求的系统或单元', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `graduation_indicators` VALUES ('0302', '03', '3-2', '能够在设计中考虑社会、健康、安全、法律及文化等因素', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `graduation_indicators` VALUES ('0401', '04', '4-1', '能够基于科学原理设计实验方案并实施', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `graduation_indicators` VALUES ('0402', '04', '4-2', '能够对实验数据进行科学分析并得出有效结论', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for graduation_requirements
+-- ----------------------------
+DROP TABLE IF EXISTS `graduation_requirements`;
+CREATE TABLE `graduation_requirements`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_code`(`code` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of graduation_requirements
+-- ----------------------------
+INSERT INTO `graduation_requirements` VALUES ('01', '1', '工程知识', '能够将数学、自然科学、工程基础和专业知识用于解决复杂工程问题', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `graduation_requirements` VALUES ('02', '2', '问题分析', '能够应用数学、自然科学和工程科学的基本原理，识别、表达并通过文献研究分析复杂工程问题', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `graduation_requirements` VALUES ('03', '3', '设计/开发解决方案', '能够设计针对复杂工程问题的解决方案，设计满足特定需求的系统、单元或流程', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `graduation_requirements` VALUES ('04', '4', '研究', '能够基于科学原理并采用科学方法对复杂工程问题进行研究，包括设计实验、分析与解释数据', '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for internal_weight_matrix
+-- ----------------------------
+DROP TABLE IF EXISTS `internal_weight_matrix`;
+CREATE TABLE `internal_weight_matrix`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `objective_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `indicator_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `weight_w` decimal(5, 4) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_objective_indicator`(`objective_id` ASC, `indicator_id` ASC) USING BTREE,
+  INDEX `idx_indicator`(`indicator_id` ASC) USING BTREE,
+  CONSTRAINT `fk_weight_indicator` FOREIGN KEY (`indicator_id`) REFERENCES `graduation_indicators` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_weight_obj` FOREIGN KEY (`objective_id`) REFERENCES `course_objectives` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of internal_weight_matrix
+-- ----------------------------
+INSERT INTO `internal_weight_matrix` VALUES ('71001', '202506701', '0101', 1.0000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `internal_weight_matrix` VALUES ('71002', '202506702', '0201', 1.0000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `internal_weight_matrix` VALUES ('71003', '202506703', '0301', 1.0000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `internal_weight_matrix` VALUES ('71004', '202507101', '0102', 1.0000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `internal_weight_matrix` VALUES ('71005', '202507102', '0201', 0.5000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `internal_weight_matrix` VALUES ('71006', '202507103', '0201', 0.5000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `internal_weight_matrix` VALUES ('71007', '202508201', '0301', 0.6000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `internal_weight_matrix` VALUES ('71008', '202508202', '0301', 0.4000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `internal_weight_matrix` VALUES ('71009', '202508203', '0401', 1.0000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `internal_weight_matrix` VALUES ('71010', '202509301', '0202', 1.0000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `internal_weight_matrix` VALUES ('71011', '202509302', '0302', 1.0000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `internal_weight_matrix` VALUES ('71012', '202509303', '0402', 1.0000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for macro_support_matrix
+-- ----------------------------
+DROP TABLE IF EXISTS `macro_support_matrix`;
+CREATE TABLE `macro_support_matrix`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `course_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `indicator_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `weight_W` decimal(5, 4) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_course_indicator`(`course_id` ASC, `indicator_id` ASC) USING BTREE,
+  INDEX `idx_indicator`(`indicator_id` ASC) USING BTREE,
+  CONSTRAINT `fk_matrix_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_matrix_indicator` FOREIGN KEY (`indicator_id`) REFERENCES `graduation_indicators` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of macro_support_matrix
+-- ----------------------------
+INSERT INTO `macro_support_matrix` VALUES ('70001', '2025067', '0101', 0.3000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `macro_support_matrix` VALUES ('70002', '2025067', '0201', 0.4000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `macro_support_matrix` VALUES ('70003', '2025067', '0301', 0.3000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `macro_support_matrix` VALUES ('70004', '2025071', '0102', 0.5000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `macro_support_matrix` VALUES ('70005', '2025071', '0201', 0.5000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `macro_support_matrix` VALUES ('70006', '2025082', '0301', 0.5000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `macro_support_matrix` VALUES ('70007', '2025082', '0401', 0.5000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `macro_support_matrix` VALUES ('70008', '2025093', '0202', 0.3500, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `macro_support_matrix` VALUES ('70009', '2025093', '0302', 0.3000, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `macro_support_matrix` VALUES ('70010', '2025093', '0402', 0.3500, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for student_scores
+-- ----------------------------
+DROP TABLE IF EXISTS `student_scores`;
+CREATE TABLE `student_scores`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `class_student_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `assessment_item_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `score` decimal(6, 2) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_class_student_item`(`class_student_id` ASC, `assessment_item_id` ASC) USING BTREE,
+  INDEX `idx_assessment_item`(`assessment_item_id` ASC) USING BTREE,
+  CONSTRAINT `fk_score_cs` FOREIGN KEY (`class_student_id`) REFERENCES `class_students` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_score_item` FOREIGN KEY (`assessment_item_id`) REFERENCES `assessment_items` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of student_scores
+-- ----------------------------
+INSERT INTO `student_scores` VALUES ('90001', '60001', '2025067001', 92.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90002', '60001', '2025067002', 88.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90003', '60001', '2025067003', 85.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90004', '60001', '2025067004', 90.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90005', '60001', '2025067005', 82.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90006', '60001', '2025067006', 87.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90007', '60002', '2025067001', 75.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90008', '60002', '2025067002', 72.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90009', '60002', '2025067003', 78.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90010', '60002', '2025067004', 80.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90011', '60002', '2025067005', 70.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90012', '60002', '2025067006', 76.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90013', '60003', '2025067001', 95.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90014', '60003', '2025067002', 91.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90015', '60003', '2025067003', 89.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90016', '60003', '2025067004', 93.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90017', '60003', '2025067005', 88.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90018', '60003', '2025067006', 90.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90019', '60004', '2025067001', 60.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90020', '60004', '2025067002', 55.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90021', '60004', '2025067003', 68.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90022', '60004', '2025067004', 65.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90023', '60004', '2025067005', 58.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90024', '60004', '2025067006', 62.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90025', '60005', '2025067001', 83.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90026', '60005', '2025067002', 79.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90027', '60005', '2025067003', 86.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90028', '60005', '2025067004', 81.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90029', '60005', '2025067005', 74.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90030', '60005', '2025067006', 77.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90031', '60006', '2025067001', 70.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90032', '60006', '2025067002', 66.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90033', '60006', '2025067003', 73.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90034', '60006', '2025067004', 68.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90035', '60006', '2025067005', 64.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90036', '60006', '2025067006', 71.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90037', '60007', '2025067001', 88.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90038', '60007', '2025067002', 84.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90039', '60007', '2025067003', 90.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90040', '60007', '2025067004', 86.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90041', '60007', '2025067005', 79.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90042', '60007', '2025067006', 85.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90043', '60008', '2025067001', 52.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90044', '60008', '2025067002', 48.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90045', '60008', '2025067003', 55.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90046', '60008', '2025067004', 60.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90047', '60008', '2025067005', 45.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `student_scores` VALUES ('90048', '60008', '2025067006', 50.00, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for students
+-- ----------------------------
+DROP TABLE IF EXISTS `students`;
+CREATE TABLE `students`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `student_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `college` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `major` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `grade` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_student_id`(`student_id` ASC) USING BTREE,
+  INDEX `idx_college`(`college` ASC) USING BTREE,
+  INDEX `idx_major`(`major` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of students
+-- ----------------------------
+INSERT INTO `students` VALUES ('202520701201', '202520701201', '陈思远', '计算机学院', '计算机科学与技术', '2025', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `students` VALUES ('202520701202', '202520701202', '林晓涵', '计算机学院', '计算机科学与技术', '2025', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `students` VALUES ('202520701203', '202520701203', '黄志鹏', '计算机学院', '计算机科学与技术', '2025', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `students` VALUES ('202520701204', '202520701204', '赵雨桐', '计算机学院', '计算机科学与技术', '2025', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `students` VALUES ('202520701205', '202520701205', '周子轩', '计算机学院', '计算机科学与技术', '2025', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `students` VALUES ('202520701206', '202520701206', '吴嘉豪', '计算机学院', '计算机科学与技术', '2025', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `students` VALUES ('202520701207', '202520701207', '郑雅琪', '计算机学院', '计算机科学与技术', '2025', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `students` VALUES ('202520701208', '202520701208', '王浩然', '计算机学院', '计算机科学与技术', '2025', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `students` VALUES ('202520702301', '202520702301', '孙明辉', '软件学院', '软件工程', '2025', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `students` VALUES ('202520702302', '202520702302', '许文婷', '软件学院', '软件工程', '2025', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `students` VALUES ('202520702303', '202520702303', '何俊杰', '软件学院', '软件工程', '2025', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+INSERT INTO `students` VALUES ('202520702304', '202520702304', '马晓燕', '软件学院', '软件工程', '2025', 1, '2026-05-19 16:38:08', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for unlock_log
+-- ----------------------------
+DROP TABLE IF EXISTS `unlock_log`;
+CREATE TABLE `unlock_log`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `course_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `class_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `operator_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `reason` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_course_class`(`course_id` ASC, `class_id` ASC) USING BTREE,
+  INDEX `fk_unlog_class`(`class_id` ASC) USING BTREE,
+  INDEX `fk_unlog_operator`(`operator_id` ASC) USING BTREE,
+  CONSTRAINT `fk_unlog_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_unlog_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_unlog_operator` FOREIGN KEY (`operator_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of unlock_log
+-- ----------------------------
+INSERT INTO `unlock_log` VALUES ('50001', '2025067', '2025067001', '20251312', '教师张伟申请修改王浩然实验报告成绩，经教务审核通过', '2026-05-19 16:38:08');
+INSERT INTO `unlock_log` VALUES ('50002', '2025071', '2025071001', '20251312', '期末考试成绩录入有误，需修正后重新计算达成度', '2026-05-19 16:38:08');
+
+-- ----------------------------
+-- Table structure for users
+-- ----------------------------
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users`  (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `role` enum('admin','academic','director','teacher') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `display_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `college` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `major` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_username`(`username` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of users
+-- ----------------------------
+INSERT INTO `users` VALUES ('20230623', 'zhangwei', '$2b$12$69bY2gDFk9v0KA0v58TFhu5VrfefiIPg9DQYeZpYOJtIE7TKcSPSm', 'teacher', '教师张伟', '计算机学院', '计算机科学与技术', 1, '2026-05-19 16:38:08', '2026-05-26 22:25:16');
+INSERT INTO `users` VALUES ('20230815', 'liuqiang', '$2b$12$odQ/yR9u0lZsQqmfNDZcz.DAgKBzXKbNh/7LvpEeaSfZycbl9AUy.', 'teacher', '教师刘强', '软件学院', '软件工程', 1, '2026-05-19 16:38:08', '2026-05-26 22:25:16');
+INSERT INTO `users` VALUES ('20250001', 'admin', '$2b$12$L4.W6371fKR7B9bjonDAiu6mpIQyPDQNhoOhKh0ysuRYFWEmlCpoy', 'admin', '系统管理员', NULL, NULL, 1, '2026-05-19 16:38:08', '2026-05-26 22:25:16');
+INSERT INTO `users` VALUES ('20250112', 'liming', '$2b$12$lyDZITSM/EFsDV807lycMepRlsprgluQgf9dUlrdFHhUFyi75D/pq', 'director', '专业负责人李明', '计算机学院', '计算机科学与技术', 1, '2026-05-19 16:38:08', '2026-05-26 22:25:16');
+INSERT INTO `users` VALUES ('20251312', 'wangfang', '$2b$12$LLGi6dcT7sfWpSpNrbFp3OoVUwmmktoT.VgRfCOnlSbqm6on7otKa', 'academic', '教务员王芳', '计算机学院', '计算机科学与技术', 1, '2026-05-19 16:38:08', '2026-05-26 22:25:16');
+
+SET FOREIGN_KEY_CHECKS = 1;
