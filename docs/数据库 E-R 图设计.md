@@ -54,151 +54,155 @@
 
 ## 4. E-R 图
 
-```
-┌──────────────────┐       ┌──────────────────┐       ┌──────────────────┐
-│   User (用户)     │       │  Course (课程)    │       │ GlobalConfig     │
-│──────────────────│       │──────────────────│       │──────────────────│
-│ id (PK)          │       │ id (PK)          │       │ id (PK)          │
-│ username (UQ)    │       │ code (UQ)        │       │ category         │
-│ password_hash    │       │ name             │       │ key              │
-│ role (ENUM)      │       │ credit           │       │ value            │
-│ display_name     │       │ hours_theory     │       │ is_active        │
-│ college          │       │ hours_lab        │       └──────────────────┘
-│ major            │       │ college          │
-│ is_active        │       │ major            │
-└──────┬───────────┘       │ academic_year    │
-       │                   │ semester         │
-       │ 1:N teacher_id    │ is_active        │
-       ▼                   └──┬───────┬───┬───┘
-┌──────────────────┐          │       │   │
-│  Class (教学班)   │◄─────────┘       │   │
-│──────────────────│  1:N course_id   │   │
-│ id (PK)          │                  │   │
-│ course_id (FK)   │                  │   │
-│ teacher_id (FK)  │                  │   │
-│ name             │                  │   │
-│ academic_year    │                  │   │
-│ semester         │                  │   │
-└──────┬───────────┘                  │   │
-       │                              │   │
-       │ 1:N class_id                 │   │
-       ▼                              │   │
-┌──────────────────┐                  │   │
-│ ClassStudent     │                  │   │
-│ (选课关系)        │                  │   │
-│──────────────────│                  │   │
-│ id (PK)          │                  │   │
-│ class_id (FK)    │                  │   │
-│ student_id (FK)  │                  │   │
-└──┬────────────┬──┘                  │   │
-   │            │                     │   │
-   │ 1:N        │                     │   │
-   ▼            │ 1:N                 │   │
-┌──────────┐    │ student_id          │   │
-│ Student  │    ▼                     │   │
-│ (学生)   │◄───┘                     │   │
-│──────────│                          │   │
-│ id (PK)  │                          │   │
-│student_id│                          │   │
-│  (UQ)    │                          │   │
-│ name     │                          │   │
-│ college  │                          │   │
-│ major    │                          │   │
-│ grade    │                          │   │
-│is_active │                          │   │
-└──────────┘                          │   │
-                                      │   │
-                   ┌──────────────────┘   │
-                   │                      │
-                   │ 1:N                  │ 1:N
-                   ▼                      ▼
-        ┌──────────────────┐   ┌──────────────────┐
-        │ CourseObjective  │   │ AssessmentItem   │
-        │ (课程目标)        │   │ (考核点)          │
-        │──────────────────│   │──────────────────│
-        │ id (PK)          │   │ id (PK)          │
-        │ course_id (FK)   │   │ course_id (FK)   │
-        │ code             │   │ objective_id(FK) │
-        │ description      │◄──│ name             │
-        │ dimension (ENUM) │ 1:N max_score       │
-        └──┬───────────┬───┘   └────────┬─────────┘
-           │           │                │
-           │           │                │
-           │           │                │ M:N class_student_id(FK)
-           │           │                ▼
-           │           │     ┌──────────────────┐        ┌──────────────────┐
-           │           │     │ StudentScore     │   M:N  │ ClassStudent     │
-           │           │     │ (学生成绩)        │◄───────│ (选课关系)        │
-           │           │     │──────────────────│        └──────────────────┘
-           │           │     │ id (PK)          │
-           │           │     │class_student_id  │
-           │           │     │ assessment_item  │
-           │           │     │ score            │
-           │           │     └──────────────────┘
-           │           │
-           │           │ M:N objective_id(FK)
-           │           │    indicator_id(FK)
-           │           ▼
-           │  ┌──────────────────┐
-           │  │InternalWeightMatrix│
-           │  │ (内部权重矩阵)     │
-           │  │──────────────────│
-           │  │ id (PK)          │
-           │  │ objective_id(FK) │
-           │  │ indicator_id(FK) │
-           │  │ weight_w         │
-           │  └────────┬─────────┘
-           │           │
-           │           │
-           ▼           ▼
-┌──────────────────────────────┐        ┌──────────────────┐
-│  GraduationIndicator         │        │GraduationRequirement│
-│  (指标点)                     │        │ (毕业要求)         │
-│──────────────────────────────│        │──────────────────│
-│ id (PK)                      │        │ id (PK)          │
-│ requirement_id (FK)─────────────────►│ code (UQ)        │
-│ code (UQ)                    │  1:N   │ title            │
-│ description                  │        │ description      │
-└──────┬───────────────┬───────┘        └──────────────────┘
-       │               │
-       │               │ M:N course_id(FK)
-       │               │    indicator_id(FK)
-       │               ▼
-       │    ┌──────────────────┐
-       │    │MacroSupportMatrix│
-       │    │ (宏观支撑矩阵)    │
-       │    │──────────────────│
-       │    │ id (PK)          │
-       │    │ course_id (FK)   │◄──── Course
-       │    │ indicator_id(FK) │
-       │    │ weight_W         │
-       │    └──────────────────┘
-       │
-       │ indicator_id(FK)
-       ▼
-┌──────────────────────────────────────────────────┐
-│              CalculationResult (计算结果快照)       │
-│──────────────────────────────────────────────────│
-│ id (PK)                                          │
-│ course_id (FK) ──► Course                        │
-│ class_id (FK) ──► Class                          │
-│ level (ENUM: objective/course/program)           │
-│ objective_id (FK) ──► CourseObjective            │
-│ indicator_id (FK) ──► GraduationIndicator        │
-│ achievement_value                                │
-│ locked                                           │
-└──────────────────────────────────────────────────┘
+```mermaid
+erDiagram
+    User {
+        int id
+        string username
+        string password_hash
+        string role
+        string display_name
+        string college
+        string major
+        boolean is_active
+    }
 
+    GlobalConfig {
+        int id
+        string category
+        string key
+        string value
+        boolean is_active
+    }
 
-┌──────────────────────────┐        ┌──────────────────┐
-│    UnlockLog (解锁日志)    │        │  User (用户)     │
-│──────────────────────────│        └──────────────────┘
-│ id (PK)                  │               ▲
-│ course_id (FK) ──► Course│               │
-│ class_id (FK) ──► Class  │               │ operator_id(FK)
-│ operator_id (FK) ───────────────────────┘
-│ reason                   │
-└──────────────────────────┘
+    Course {
+        int id
+        string code
+        string name
+        float credit
+        int hours_theory
+        int hours_lab
+        string college
+        string major
+        string academic_year
+        string semester
+        boolean is_active
+    }
+
+    TeachingClass {
+        int id
+        int course_id
+        int teacher_id
+        string name
+        string academic_year
+        string semester
+    }
+
+    Student {
+        int id
+        string student_id
+        string name
+        string college
+        string major
+        string grade
+        boolean is_active
+    }
+
+    ClassStudent {
+        int id
+        int class_id
+        int student_id
+    }
+
+    CourseObjective {
+        int id
+        int course_id
+        string code
+        string description
+        string dimension
+    }
+
+    AssessmentItem {
+        int id
+        int course_id
+        int objective_id
+        string name
+        float max_score
+    }
+
+    StudentScore {
+        int id
+        int class_student_id
+        int assessment_item_id
+        float score
+    }
+
+    GraduationRequirement {
+        int id
+        string code
+        string title
+        string description
+    }
+
+    GraduationIndicator {
+        int id
+        int requirement_id
+        string code
+        string description
+    }
+
+    MacroSupportMatrix {
+        int id
+        int course_id
+        int indicator_id
+        float weight_W
+    }
+
+    InternalWeightMatrix {
+        int id
+        int objective_id
+        int indicator_id
+        float weight_w
+    }
+
+    CalculationResult {
+        int id
+        int course_id
+        int class_id
+        string level
+        int objective_id
+        int indicator_id
+        float achievement_value
+        boolean locked
+    }
+
+    UnlockLog {
+        int id
+        int course_id
+        int class_id
+        int operator_id
+        string reason
+    }
+
+    User ||--o{ TeachingClass : "主讲"
+    Course ||--o{ TeachingClass : "开设"
+    TeachingClass ||--o{ ClassStudent : "包含"
+    Student ||--o{ ClassStudent : "参与"
+    Course ||--o{ CourseObjective : "课程目标"
+    CourseObjective ||--o{ AssessmentItem : "考核绑定"
+    ClassStudent ||--o{ StudentScore : "成绩录入"
+    AssessmentItem ||--o{ StudentScore : "考核绑定"
+    GraduationRequirement ||--o{ GraduationIndicator : "细分"
+    GraduationIndicator ||--o{ MacroSupportMatrix : "宏观支撑"
+    Course ||--o{ MacroSupportMatrix : "宏观支撑"
+    CourseObjective ||--o{ InternalWeightMatrix : "内部权重"
+    GraduationIndicator ||--o{ InternalWeightMatrix : "内部权重"
+    Course ||..o{ CalculationResult : "结果快照"
+    TeachingClass ||..o{ CalculationResult : "结果快照"
+    CourseObjective ||..o{ CalculationResult : "结果快照"
+    GraduationIndicator ||..o{ CalculationResult : "结果快照"
+    CalculationResult ||..o{ UnlockLog : "审计记录"
+    User ||..o{ UnlockLog : "操作人"
 ```
 
 ---
