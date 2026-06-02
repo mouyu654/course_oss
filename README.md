@@ -44,7 +44,9 @@ npm install
 npm run dev
 ```
 
-前端默认运行在 http://localhost:5173，开发模式下自动代理 `/api` 请求到后端。
+前端默认运行在 http://localhost:5173
+
+开发模式下自动代理 `/api` 请求到后端。
 
 ### 4. 在线试用
 
