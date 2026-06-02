@@ -1,9 +1,9 @@
-import api from './index.js'
+import request from '@/utils/request'
 
-export function login(username, password) {
-  return api.post('/auth/login', { username, password })
+export function login(data) {
+  return request({ url: '/auth/login', method: 'post', data })
 }
 
-export function getMe() {
-  return api.get('/auth/me')
+export function changePassword(data) {
+  return request({ url: '/auth/password', method: 'put', data })
 }

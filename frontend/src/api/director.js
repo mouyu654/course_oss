@@ -1,36 +1,35 @@
-import api from './index.js'
+import request from '@/utils/request'
 
-// 毕业要求
-export function getRequirements() {
-  return api.get('/director/requirements')
+// ===== 毕业要求管理（需要 majorId） =====
+export function getGradReqs(majorId) {
+  return request({ url: '/grad-req', method: 'get', params: { majorId } })
 }
-
-export function createRequirement(data) {
-  return api.post('/director/requirements', data)
+export function createGradReq(data) {
+  return request({ url: '/grad-req', method: 'post', data })
 }
-
-export function deleteRequirement(id) {
-  return api.delete(`/director/requirements/${id}`)
+export function updateGradReq(id, data) {
+  return request({ url: `/grad-req/${id}`, method: 'put', data })
 }
-
-// 指标点
-export function getIndicators(requirementId) {
-  return api.get('/director/indicators', { params: { requirement_id: requirementId } })
+export function deleteGradReq(id) {
+  return request({ url: `/grad-req/${id}`, method: 'delete' })
 }
-
-export function createIndicator(data) {
-  return api.post('/director/indicators', data)
+export function createIndicator(gradReqId, data) {
+  return request({ url: `/grad-req/${gradReqId}/indicators`, method: 'post', data })
 }
-
+export function updateIndicator(id, data) {
+  return request({ url: `/grad-req/indicators/${id}`, method: 'put', data })
+}
 export function deleteIndicator(id) {
-  return api.delete(`/director/indicators/${id}`)
+  return request({ url: `/grad-req/indicators/${id}`, method: 'delete' })
 }
 
-// 宏观支撑矩阵
-export function getMacroMatrix() {
-  return api.get('/director/macro-matrix')
+// ===== 宏观支撑矩阵（需要 majorId） =====
+export function getMacroMatrix(majorId) {
+  return request({ url: '/macro-matrix', method: 'get', params: { majorId } })
 }
-
-export function submitMacroMatrix(data) {
-  return api.post('/director/macro-matrix', data)
+export function updateMacroMatrix(data) {
+  return request({ url: '/macro-matrix', method: 'put', data })
+}
+export function getSupportedIndicators(courseId) {
+  return request({ url: `/macro-matrix/course/${courseId}/supported-indicators`, method: 'get' })
 }

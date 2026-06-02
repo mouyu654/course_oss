@@ -1,69 +1,122 @@
-import api from './index.js'
+import request from '@/utils/request'
 
-// 课程管理
-export function getCourses() {
-  return api.get('/academic/courses')
+// ===== 课程管理 =====
+export function getCourses(params) {
+  return request({ url: '/courses', method: 'get', params })
 }
-
 export function createCourse(data) {
-  return api.post('/academic/courses', data)
+  return request({ url: '/courses', method: 'post', data })
 }
-
-export function importCourses(file) {
-  const formData = new FormData()
-  formData.append('file', file)
-  return api.post('/academic/courses/import', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+export function updateCourse(id, data) {
+  return request({ url: `/courses/${id}`, method: 'put', data })
 }
-
 export function deleteCourse(id) {
-  return api.delete(`/academic/courses/${id}`)
+  return request({ url: `/courses/${id}`, method: 'delete' })
+}
+export function getCourseClasses(courseId) {
+  return request({ url: `/courses/${courseId}/classes`, method: 'get' })
 }
 
-// 教学班管理
-export function getClasses(courseId) {
-  return api.get('/academic/classes', { params: { course_id: courseId } })
-}
-
-export function createClass(data) {
-  return api.post('/academic/classes', data)
-}
-
-// 学生管理
-export function getStudents(classId) {
-  return api.get('/academic/students', { params: { class_id: classId } })
-}
-
-export function importStudents(classId, file) {
+// ===== 学生管理 =====
+export function importStudents(file) {
   const formData = new FormData()
   formData.append('file', file)
-  return api.post('/academic/students/import', formData, {
-    params: { class_id: classId },
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  return request({ url: '/students/import', method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+}
+export function getStudents(params) {
+  return request({ url: '/students', method: 'get', params })
+}
+export function createStudent(data) {
+  return request({ url: '/students', method: 'post', data })
+}
+export function updateStudent(id, data) {
+  return request({ url: `/students/${id}`, method: 'put', data })
+}
+export function deleteStudent(id) {
+  return request({ url: `/students/${id}`, method: 'delete' })
+}
+export function batchUpdateStudentStatus(data) {
+  return request({ url: '/students/batch-status', method: 'put', data })
 }
 
-// 计算进度
-export function getCalculationProgress() {
-  return api.get('/academic/calculation/progress')
+// ===== 教学班级管理 =====
+export function getTeachingClasses(params) {
+  return request({ url: '/teaching-classes', method: 'get', params })
+}
+export function createTeachingClass(data) {
+  return request({ url: '/teaching-classes', method: 'post', data })
+}
+export function updateTeachingClass(id, data) {
+  return request({ url: `/teaching-classes/${id}`, method: 'put', data })
+}
+export function deleteTeachingClass(id) {
+  return request({ url: `/teaching-classes/${id}`, method: 'delete' })
+}
+export function getTeachingClassStudents(classId) {
+  return request({ url: `/teaching-classes/${classId}/students`, method: 'get' })
+}
+export function addTeachingClassStudent(classId, studentId) {
+  return request({ url: `/teaching-classes/${classId}/students/${studentId}`, method: 'post' })
+}
+export function removeTeachingClassStudent(classId, studentId) {
+  return request({ url: `/teaching-classes/${classId}/students/${studentId}`, method: 'delete' })
 }
 
-// 专业级全局计算
-export function calculateProgram() {
-  return api.post('/academic/calculate/program')
+// ===== 全局计算 =====
+export function getEnrollmentYears() {
+  return request({ url: '/global/enrollment-years', method: 'get' })
+}
+export function getGlobalDashboard(params) {
+  return request({ url: '/global/dashboard', method: 'get', params })
+}
+export function triggerGlobalCompute(params) {
+  return request({ url: '/global/compute', method: 'post', params })
+}
+export function getGlobalResults(params) {
+  return request({ url: '/global/results', method: 'get', params })
 }
 
-// 成绩解锁
-export function unlockScore(data) {
-  return api.post('/academic/unlock', data)
+// ===== 报表 =====
+export function getCalcBatches(params) {
+  return request({ url: '/reports/major/batches', method: 'get', params })
+}
+export function getCalcRadarData(params) {
+  return request({ url: '/reports/major/data', method: 'get', params })
+}
+export function deleteCalcBatch(params) {
+  return request({ url: '/reports/major/data', method: 'delete', params })
+}
+export function downloadMajorExcel(params) {
+  return request({ url: '/reports/major/excel', method: 'get', params, responseType: 'blob' })
 }
 
-// 专业级报告
-export function getProgramResults() {
-  return api.get('/academic/results/program')
+// ===== 批量导入 =====
+export function downloadStudentTemplate() {
+  return request({ url: '/batch-import/templates/students', method: 'get', responseType: 'blob' })
 }
-
-export function exportProgramExcel() {
-  return api.get('/academic/reports/program-excel', { responseType: 'blob' })
+export function downloadCourseTemplate() {
+  return request({ url: '/batch-import/templates/courses', method: 'get', responseType: 'blob' })
+}
+export function downloadClassStudentTemplate() {
+  return request({ url: '/batch-import/templates/class-students', method: 'get', responseType: 'blob' })
+}
+export function batchImportStudents(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({ url: '/batch-import/students', method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+}
+export function batchImportCourses(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({ url: '/batch-import/courses', method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+}
+export function batchImportAdminClassStudents(classId, file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({ url: `/batch-import/admin-classes/${classId}/students`, method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+}
+export function batchImportTeachingClassStudents(classId, file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({ url: `/batch-import/teaching-classes/${classId}/students`, method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
 }
