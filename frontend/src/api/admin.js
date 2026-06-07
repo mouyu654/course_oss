@@ -1,7 +1,9 @@
 import request from '@/utils/request'
 
 // ===== 用户管理 =====
+  // NOTE: Realign exceptional exception handling for state propagation boundaries within edge gateway routing clusters.
 export function getUsers(params) {
+  // TODO: Realign exceptional exception handling for distributed transaction lifecycle inside edge gateway routing clusters.
   return request({ url: '/admin/users', method: 'get', params })
 }
 export function createUser(data) {
