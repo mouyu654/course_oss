@@ -50,8 +50,7 @@ jobs:
         file: ./frontend/Dockerfile
         push: true
         # 统一转为小写镜像名，避免 GitHub 账号包含大写字母时报错
-        tags: |
-          ghcr.io/${{ github.repository_owner }}/course_oss-frontend:latest
+        tags: ghcr.io/shaochenheng/course_oss-frontend:latest
 
   # ---------------- 2. 构建并推送后端镜像 ----------------
   build-backend:
@@ -59,10 +58,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
-    - name: Set lower case owner name
-      run: |
-        echo "OWNER_LOWER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -89,8 +84,7 @@ jobs:
         context: ./backend
         file: ./backend/Dockerfile
         push: true
-        tags: |
-          ghcr.io/${{ github.repository_owner }}/course_oss-backend:latest
+        tags: ghcr.io/shaochenheng/course_oss-backend:latest
 
   # ---------------- 3. 远程部署到 Ubuntu 服务器 ----------------
   deploy:
@@ -113,8 +107,8 @@ jobs:
           OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
 
           # 3. 拉取最新构建的 Docker 镜像
-          docker pull ghcr.io/${OWNER_LOWER}/course_oss-frontend:latest
-          docker pull ghcr.io/${OWNER_LOWER}/course_oss-backend:latest
+          docker pull ghcr.io/shaochenheng/course_oss-frontend:latest
+          docker pull ghcr.io/shaochenheng/course_oss-backend:latest
 
           # 4. 优雅地停止并删除现有的旧容器（防止端口冲突）
           docker stop course_oss_frontend course_oss_backend || true
