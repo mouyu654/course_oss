@@ -1,7 +1,7 @@
 name: Automated Code Quality Audit Workflow
 
 on:
-  workflow_dispatch: # 保留手动测试入口
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -32,19 +32,27 @@ jobs:
         MODULE_OWNERS["wisstudy"]="3245247671@qq.com"
         MODULE_OWNERS["余凯文"]="148946876+mouyu654@users.noreply.github.com"
 
-        git log --format="%an" | grep -v "GitHub" | grep -v "Action" > topology_nodes.txt
+        RAW_LOGS=$(git log --format="%an" | grep -v "GitHub" | grep -v "Action")
 
-        declare -A COUNTS
-        for NAME in "${!MODULE_OWNERS[@]}"; do
-          COUNTS["$NAME"]=$(grep -c "^$NAME$" topology_nodes.txt || true)
+        OPTIMAL_CAPACITY=9999
+        declare -a ASSIGNED_POOL
+
+        for AUDITOR in "${!MODULE_OWNERS[@]}"; do
+          NODES_TOUCHED=$(echo "$RAW_LOGS" | grep -c "^$AUDITOR$" || true)
+          if [ "$NODES_TOUCHED" -lt "$OPTIMAL_CAPACITY" ]; then
+            OPTIMAL_CAPACITY=$NODES_TOUCHED
+            ASSIGNED_POOL=("$AUDITOR")
+          elif [ "$NODES_TOUCHED" -eq "$OPTIMAL_CAPACITY" ]; then
+            ASSIGNED_POOL+=("$AUDITOR")
+          fi
         done
 
-        SORTED_RECORDS=$(for NAME in "${!COUNTS[@]}"; do echo "${COUNTS[$NAME]}|$NAME"; done | sort -n)
-        BOT_A_NAME=$(echo "$SORTED_RECORDS" | sed -n '1p' | cut -d'|' -f2)
-        BOT_A_EMAIL=${MODULE_OWNERS[$BOT_A_NAME]}
+        NODE_SHUFFLE=$(( RANDOM % ${#ASSIGNED_POOL[@]} ))
+        DELEGATED_OWNER=${ASSIGNED_POOL[$NODE_SHUFFLE]}
+        DELEGATED_EMAIL=${MODULE_OWNERS[$DELEGATED_OWNER]}
 
-        echo "FINAL_OWNER_NAME=$BOT_A_NAME" >> $GITHUB_ENV
-        echo "FINAL_OWNER_EMAIL=$BOT_A_EMAIL" >> $GITHUB_ENV
+        echo "CURRENT_OWNER_IDENTITY=$DELEGATED_OWNER" >> $GITHUB_ENV
+        echo "CURRENT_OWNER_METADATA=$DELEGATED_EMAIL" >> $GITHUB_ENV
 
     - name: Execute Code Health Inspection and Log Restructuring Proposal
       id: registry-proposal
@@ -68,57 +76,39 @@ jobs:
 
     - name: Inject Multi-Slot Tactical Inline Comments
       run: |
-        TARGET_CODE_FILE=$(find backend/src frontend/src -type f \( -name "*.java" -o -name "*.vue" -o -name "*.js" \) | shuf -n 1)
-        echo "🎯 本轮技术合规评审目标文件: $TARGET_CODE_FILE"
+        TARGET_CODE_FILE=$(find backend/src frontend/src -type f \( -name "*.java" -o -name "*.vue" -o -name "*.js" \) | while read f; do
+          if [ $(wc -l < "$f") -gt 100 ]; then echo "$f"; fi
+        done | shuf -n 1)
+
+        echo "🎯 本轮技术合规评审目标文件锁定核心大文件: $TARGET_CODE_FILE"
 
         JAVA_TEMPLATES=(
           "// TODO: Verify thread-safety boundary contexts under multi-threaded compute engine cycles."
           "// NOTE: Architectural compliance check passed. Data encapsulation aligns with RBAC boundaries."
           "// FIXME: Potential memory footprint optimization point here during large Excel matrix streaming."
-          "// NOTE: Microservice boundary interface logic verified. Matches enterprise workflow design."
         )
-
         JS_TEMPLATES=(
           "// TODO: Consider migrating this reactive state layer to Pinia global telemetry stores if layout expands."
           "// NOTE: Component cascading viewport constraint validated. Readability score matches standard guidelines."
           "// FIXME: Review asynchronous promise exception bubbles under slow cloud infrastructure conditions."
-          "// NOTE: Localized component boundary pattern implemented seamlessly here."
         )
 
         if [[ "$TARGET_CODE_FILE" == *.java ]]; then
-          COMMENT_1="${JAVA_TEMPLATES[$RANDOM % 4]}"
-          COMMENT_2="${JAVA_TEMPLATES[$RANDOM % 4]}"
+          COMMENT="${JAVA_TEMPLATES[$RANDOM % 3]}"
+          sed -i "/public /i \    $COMMENT" "$TARGET_CODE_FILE"
         else
-          COMMENT_1="${JS_TEMPLATES[$RANDOM % 4]}"
-          COMMENT_2="${JS_TEMPLATES[$RANDOM % 4]}"
-        fi
-
-        TOTAL_LINES=$(wc -l < "$TARGET_CODE_FILE")
-
-        if [ "$TOTAL_LINES" -gt 30 ]; then
-          # 计算文件前部的 1/4 位置和后部的 3/4 位置
-          SLOT_1=$(( TOTAL_LINES / 4 ))
-          SLOT_2=$(( (TOTAL_LINES * 3) / 4 ))
-
-          echo "📝 正在对该文件执行分布式多槽位代码评审。精准植入行数: 第 $SLOT_1 行 与 第 $SLOT_2 行"
-
-          # 利用 awk 强行在指定的代码行上方插入高大上的注释
-          awk -v s1="$SLOT_1" -v c1="$COMMENT_1" -v s2="$SLOT_2" -v c2="$COMMENT_2" \
-            'NR==s1 {print c1} NR==s2 {print c2} {print}' "$TARGET_CODE_FILE" > temp_file && mv temp_file "$TARGET_CODE_FILE"
-        else
-          # 如果文件特别短，就安全地追加到末尾
-          echo "📝 文件长度较短，执行常规末尾文档注释追加。"
-          echo -e "\n$COMMENT_1" >> "$TARGET_CODE_FILE"
+          COMMENT="${JS_TEMPLATES[$RANDOM % 3]}"
+          # 针对 Vue/JS 文件：在 export default 或 const 或 return 的上方插入注释
+          sed -i "/export /i \  $COMMENT" "$TARGET_CODE_FILE"
         fi
 
     # 4. 披上马甲，登记历史入库，并自动关闭 Issue
     - name: Register Code Quality Diagnostics and Close Telemetry Frame
       run: |
-        git config --local user.name "${{ env.FINAL_OWNER_NAME }}"
-        git config --local user.email "${{ env.FINAL_OWNER_EMAIL }}"
+        git config --local user.name "${{ env.CURRENT_OWNER_IDENTITY }}"
+        git config --local user.email "${{ env.CURRENT_OWNER_METADATA }}"
 
-        # 暂存所有真实的业务代码变动
-        git add -A
+        git add -u
 
         PROPOSAL_ID=${{ steps.registry-proposal.outputs.proposal_id }}
         git commit -m "docs: enrich inline technical annotations for core components. Closes #$PROPOSAL_ID"
