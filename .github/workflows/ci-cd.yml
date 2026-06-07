@@ -1,0 +1,121 @@
+name: Dockerized CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# 授予工作流向 GitHub 镜像仓库 (GHCR) 读写的权限
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  # ---------------- 1. 构建并推送前端镜像 ----------------
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install & Build Frontend
+      run: |
+        cd frontend
+        npm ci
+        npm run build
+
+    - name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and Push Frontend Image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        push: true
+        # 统一转为小写镜像名，避免 GitHub 账号包含大写字母时报错
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/course_oss-frontend:latest
+
+  # ---------------- 2. 构建并推送后端镜像 ----------------
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Build Backend JAR
+      run: |
+        cd backend
+        mvn -B package -DskipTests --file pom.xml
+
+    - name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and Push Backend Image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/course_oss-backend:latest
+
+  # ---------------- 3. 远程部署到 Ubuntu 服务器 ----------------
+  deploy:
+    needs: [build-frontend, build-backend]
+    # 只有当代码真正合并/推送到 main 分支时才触发部署，提 PR 时只编译不部署
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+    - name: SSH Remote Commands
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        script: |
+          # 1. 登录到 GitHub 镜像仓库 (让你的服务器有权拉取私有镜像)
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+          # 2. 将用户名转换为小写以便于拉取镜像
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+
+          # 3. 拉取最新构建的 Docker 镜像
+          docker pull ghcr.io/${OWNER_LOWER}/course_oss-frontend:latest
+          docker pull ghcr.io/${OWNER_LOWER}/course_oss-backend:latest
+
+          # 4. 优雅地停止并删除现有的旧容器（防止端口冲突）
+          docker stop course_oss_frontend course_oss_backend || true
+          docker rm course_oss_frontend course_oss_backend || true
+
+          # 5. 使用新镜像拉起新容器，并严格保持原有的端口映射（80 和 8080）
+          docker run -d --name course_oss_frontend -p 80:80 ghcr.io/${OWNER_LOWER}/course_oss-frontend:latest
+          docker run -d --name course_oss_backend -p 8080:8080 ghcr.io/${OWNER_LOWER}/course_oss-backend:latest
+
+          # 6. 自动清理服务器上的无用旧镜像碎片（释放服务器磁盘空间）
+          docker image prune -f
+          echo "✨ Deployment successfully accomplished by CI/CD pipeline! ✨"
