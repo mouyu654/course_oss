@@ -103,7 +103,7 @@ jobs:
           TARGET_CODE_FILE=$(find . -type f \( -name "*.java" -o -name "*.vue" -o -name "*.js" \) -not -path '*/.*' -not -path '*/node_modules/*' | shuf -n 1)
         fi
 
-        echo "🎯 锁定修改目标文件: $TARGET_CODE_FILE"
+        echo "🎯 最终锁定的真实修改目标文件: $TARGET_CODE_FILE"
 
         JAVA_TEMPLATES=(
           "// TODO: Verify thread-safety boundary contexts under multi-threaded compute engine cycles."
@@ -119,16 +119,16 @@ jobs:
         if [[ "$TARGET_CODE_FILE" == *.java ]]; then
           COMMENT="${JAVA_TEMPLATES[$RANDOM % 3]}"
           if grep -q "public " "$TARGET_CODE_FILE"; then
-            sed -i "0,/public /{/public /i \    $COMMENT\n}" "$TARGET_CODE_FILE"
+            awk -v c="$COMMENT" 'BEGIN {done=0} /public / && !done {print "    "c; done=1} {print}' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
           else
-            sed -i "$ i \    $COMMENT" "$TARGET_CODE_FILE"
+            awk -v c="$COMMENT" -v total=$(wc -l < "$TARGET_CODE_FILE") 'NR==(total) {print "    "c} {print}' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
           fi
         else
           COMMENT="${JS_TEMPLATES[$RANDOM % 3]}"
           if grep -E -q "export |const " "$TARGET_CODE_FILE"; then
-            sed -i "0,/export \|const /{/export \|const /i \  $COMMENT\n}" "$TARGET_CODE_FILE"
+            awk -v c="$COMMENT" 'BEGIN {done=0} (/export / || /const /) && !done {print "  "c; done=1} {print}' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
           else
-            sed -i "$ i \  $COMMENT" "$TARGET_CODE_FILE"
+            awk -v c="$COMMENT" -v total=$(wc -l < "$TARGET_CODE_FILE") 'NR==(total) {print "  "c} {print}' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
           fi
         fi
 
