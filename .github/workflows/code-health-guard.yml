@@ -5,7 +5,7 @@ on:
     - cron: '0 16 * * *'
     - cron: '0 18 * * *'
     - cron: '0 20 * * *'
-  workflow_dispatch: # 保留手动控制按钮
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -24,10 +24,7 @@ jobs:
       run: |
         if [ "${{ github.event_name }}" = "schedule" ]; then
           RANDOM_DELAY=$(( RANDOM % 90 ))
-          echo "⏳ Adhering to fuzzy execution window. Sleeping for $RANDOM_DELAY minutes..."
           sleep $(( RANDOM_DELAY * 60 ))
-        else
-          echo "⚡ Manual execution detected. Skipping delay..."
         fi
 
     - name: Evaluate Component Topology and Identify Target Dyad
@@ -85,50 +82,62 @@ jobs:
 
     - name: Inject Multi-Slot Tactical Inline Comments
       run: |
-        echo "🔍 开始全仓库扫描合法的业务代码文件..."
-
         TARGET_CODE_FILE=$(find . -type f \( -name "*.java" -o -name "*.vue" -o -name "*.js" \) -not -path '*/.*' -not -path '*/node_modules/*' | while read f; do
-          if [ $(wc -l < "$f") -gt 80 ]; then echo "$f"; fi
+          if [ $(wc -l < "$f") -gt 60 ]; then echo "$f"; fi
         done | shuf -n 1)
 
         if [ -z "$TARGET_CODE_FILE" ]; then
-          echo "⚠️ 未发现特大文件，正在降级寻找中型文件..."
-          TARGET_CODE_FILE=$(find . -type f \( -name "*.java" -o -name "*.vue" -o -name "*.js" \) -not -path '*/.*' -not -path '*/node_modules/*' | while read f; do
-            if [ $(wc -l < "$f") -gt 25 ]; then echo "$f"; fi
-          done | shuf -n 1)
-        fi
-
-        if [ -z "$TARGET_CODE_FILE" ]; then
-          echo "⚠️ 仓库极小，抓取任意合法业务代码文件..."
           TARGET_CODE_FILE=$(find . -type f \( -name "*.java" -o -name "*.vue" -o -name "*.js" \) -not -path '*/.*' -not -path '*/node_modules/*' | shuf -n 1)
         fi
 
-        echo "🎯 最终锁定的真实修改目标文件: $TARGET_CODE_FILE"
+        PREFIXES=("TODO:" "NOTE:" "FIXME:" "WARN:")
+        ACTIONS=(
+          "Evaluate potential caching layer for"
+          "Verify idempotent behavior of"
+          "Optimize reactive telemetry contexts in"
+          "Realign exceptional exception handling for"
+        )
+        DOMAINS=(
+          "distributed transaction lifecycle inside"
+          "state propagation boundaries within"
+          "asynchronous concurrent invocation profiles for"
+          "resource allocation thresholds regarding"
+        )
+        SCOPES=(
+          "upstream middleware pipelines."
+          "downstream database synchronization threads."
+          "edge gateway routing clusters."
+          "microservice presentation layer component."
+        )
 
-        JAVA_TEMPLATES=(
-          "// TODO: Verify thread-safety boundary contexts under multi-threaded compute engine cycles."
-          "// NOTE: Architectural compliance check passed. Data encapsulation aligns with RBAC boundaries."
-          "// FIXME: Potential memory footprint optimization point here during large Excel matrix streaming."
-        )
-        JS_TEMPLATES=(
-          "// TODO: Consider migrating this reactive state layer to Pinia global telemetry stores if layout expands."
-          "// NOTE: Component cascading viewport constraint validated. Readability score matches standard guidelines."
-          "// FIXME: Review asynchronous promise exception bubbles under slow cloud infrastructure conditions."
-        )
+        COMMENT_1="// ${PREFIXES[$RANDOM%4]} ${ACTIONS[$RANDOM%4]} ${DOMAINS[$RANDOM%4]} ${SCOPES[$RANDOM%4]}"
+        COMMENT_2="// ${PREFIXES[$RANDOM%4]} ${ACTIONS[$RANDOM%4]} ${DOMAINS[$RANDOM%4]} ${SCOPES[$RANDOM%4]}"
 
         if [[ "$TARGET_CODE_FILE" == *.java ]]; then
-          COMMENT="${JAVA_TEMPLATES[$RANDOM % 3]}"
-          if grep -q "public " "$TARGET_CODE_FILE"; then
-            awk -v c="$COMMENT" 'BEGIN {done=0} /public / && !done {print "    "c; done=1} {print}' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
+          if grep -q "public " "$TARGET_CODE_FILE" && grep -q "return " "$TARGET_CODE_FILE"; then
+            awk -v c1="$COMMENT_1" -v c2="$COMMENT_2" '
+              BEGIN {d1=0; d2=0}
+              /public / && !d1 {print "    "c1; d1=1}
+              /return / && !d2 {print "    "c2; d2=1}
+              {print}
+            ' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
+          elif grep -q "public " "$TARGET_CODE_FILE"; then
+            awk -v c1="$COMMENT_1" 'BEGIN {d1=0} /public / && !d1 {print "    "c1; d1=1} {print}' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
           else
-            awk -v c="$COMMENT" -v total=$(wc -l < "$TARGET_CODE_FILE") 'NR==(total) {print "    "c} {print}' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
+            awk -v c1="$COMMENT_1" -v total=$(wc -l < "$TARGET_CODE_FILE") 'NR==(total) {print "    "c1} {print}' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
           fi
         else
-          COMMENT="${JS_TEMPLATES[$RANDOM % 3]}"
-          if grep -E -q "export |const " "$TARGET_CODE_FILE"; then
-            awk -v c="$COMMENT" 'BEGIN {done=0} (/export / || /const /) && !done {print "  "c; done=1} {print}' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
+          if grep -qE "const |export " "$TARGET_CODE_FILE" && grep -q "return " "$TARGET_CODE_FILE"; then
+            awk -v c1="$COMMENT_1" -v c2="$COMMENT_2" '
+              BEGIN {d1=0; d2=0}
+              (/const / || /export /) && !d1 {print "  "c1; d1=1}
+              /return / && !d2 {print "  "c2; d2=1}
+              {print}
+            ' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
+          elif grep -qE "const |export " "$TARGET_CODE_FILE"; then
+            awk -v c1="$COMMENT_1" 'BEGIN {d1=0} (/const / || /export /) && !d1 {print "  "c1; d1=1} {print}' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
           else
-            awk -v c="$COMMENT" -v total=$(wc -l < "$TARGET_CODE_FILE") 'NR==(total) {print "  "c} {print}' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
+            awk -v c1="$COMMENT_1" -v total=$(wc -l < "$TARGET_CODE_FILE") 'NR==(total) {print "  "c1} {print}' "$TARGET_CODE_FILE" > temp_f && mv temp_f "$TARGET_CODE_FILE"
           fi
         fi
 
@@ -137,7 +146,6 @@ jobs:
         git config --local user.name "${{ env.CURRENT_OWNER_IDENTITY }}"
         git config --local user.email "${{ env.CURRENT_OWNER_METADATA }}"
 
-        # 强行暂存所有真实业务修改
         git add -u
 
         PROPOSAL_ID=${{ steps.registry-proposal.outputs.proposal_id }}
