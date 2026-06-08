@@ -48,8 +48,7 @@ jobs:
       with:
         context: ./frontend
         file: ./frontend/Dockerfile
-        push: true
-        # 统一转为小写镜像名，避免 GitHub 账号包含大写字母时报错
+        push: ${{ github.event_name != 'pull_request' }}
         tags: ghcr.io/shaochenheng/course_oss-frontend:latest
 
   # ---------------- 2. 构建并推送后端镜像 ----------------
@@ -83,7 +82,7 @@ jobs:
       with:
         context: ./backend
         file: ./backend/Dockerfile
-        push: true
+        push: ${{ github.event_name != 'pull_request' }}
         tags: ghcr.io/shaochenheng/course_oss-backend:latest
 
   # ---------------- 3. 远程部署到 Ubuntu 服务器 ----------------
