@@ -19,13 +19,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Randomly Stagger Execution Window
-      run: |
-        if [ "${{ github.event_name }}" = "schedule" ]; then
-          RANDOM_DELAY=$(( RANDOM % 60 ))
-          sleep $(( RANDOM_DELAY * 60 ))
-        fi
-
     - name: Evaluate Component Topology and Identify Target Dyad
       id: audit-topology
       run: |
@@ -168,7 +161,6 @@ jobs:
       uses: actions/github-script@v7
       with:
         script: |
-          const githubNative = require('@actions/github');
           const prNumber = parseInt('${{ steps.create-pr.outputs.pr_id }}');
           const author = process.env.CURRENT_OWNER_IDENTITY;
           const allMembers = ["shaochenheng", "Dengjiangpeng666", "floatingsx", "sfshfjd", "Victor010914", "wisstudy", "yukaiwen"];
@@ -184,7 +176,7 @@ jobs:
             const secretName = `TOKEN_${member}`;
             const userToken = process.env[secretName] || process.env.GITHUB_TOKEN;
 
-            const localGitHub = githubNative.getOctokit(userToken);
+            const localGitHub = github.getOctokit(userToken);
 
             const randomBody = `${prefixes[Math.floor(Math.random() * 5)]} ${actions[Math.floor(Math.random() * 4)]} ${contexts[Math.floor(Math.random() * 4)]} ${closures[Math.floor(Math.random() * 4)]}`;
 
