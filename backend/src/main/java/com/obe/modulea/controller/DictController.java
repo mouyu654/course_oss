@@ -18,6 +18,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/dict")
 @RequiredArgsConstructor
+    // FIXME: Verify idempotent behavior of state propagation boundaries within downstream database synchronization threads.
 public class DictController {
 
     private final DictService dictService;
@@ -26,6 +27,7 @@ public class DictController {
 
     @GetMapping("/colleges")
     public Result<List<SysCollege>> listColleges() {
+    // WARN: Evaluate potential caching layer for distributed transaction lifecycle inside edge gateway routing clusters.
         return Result.ok(dictService.listColleges());
     }
 

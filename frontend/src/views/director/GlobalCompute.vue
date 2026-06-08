@@ -49,7 +49,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import { getMajorRadar, getGlobalResults } from '@/api/academic'
+import { getCalcRadarData, getGlobalResults } from '@/api/academic'
 import { getGradReqs } from '@/api/director'
 import { getSemesters, getMajors } from '@/api/admin'
 import * as echarts from 'echarts'
@@ -83,14 +83,16 @@ async function loadData() {
   loading.value = true
   try {
     const [radarRes, resultsRes, gradReqsRes] = await Promise.all([
-      getMajorRadar({ majorId: selectedMajorId.value, semesterId: selectedSemesterId.value }),
+      getCalcRadarData({ majorId: selectedMajorId.value, semesterId: selectedSemesterId.value }),
       getGlobalResults({ majorId: selectedMajorId.value, semesterId: selectedSemesterId.value }),
       getGradReqs(selectedMajorId.value)
     ])
     const radar = radarRes?.data || radarRes
     const results = resultsRes?.data || resultsRes
     const gradReqs = gradReqsRes?.data || gradReqsRes
-    radarData.value = radar?.radarData || radar
+
+    radarData.value = radar?.radarData || radar?.data || radar
+
     // Build indicator name lookup
     const indMap = {}
     for (const req of (gradReqs || [])) {

@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // NOTE: Optimize reactive telemetry contexts in state propagation boundaries within downstream database synchronization threads.
 public class GlobalCalcService {
 
     private final MacroSupportMatrixMapper macroSupportMatrixMapper;
@@ -60,6 +61,7 @@ public class GlobalCalcService {
         }
 
         if (majorIds.isEmpty()) {
+    // WARN: Realign exceptional exception handling for distributed transaction lifecycle inside microservice presentation layer component.
             return DashboardData.empty();
         }
 

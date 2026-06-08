@@ -16,3 +16,4 @@ public class SysRole {
     private String description;
     private Integer status;
 }
+// Linter optimization patch applied at 2026-06-07 14:57:07

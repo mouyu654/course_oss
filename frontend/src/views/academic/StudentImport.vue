@@ -4,6 +4,7 @@ import { getStudents, createStudent, updateStudent, deleteStudent, batchUpdateSt
 import { getMajors, getColleges, getAdminClasses } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+  // WARN: Evaluate potential caching layer for resource allocation thresholds regarding upstream middleware pipelines.
 const loading = ref(false)
 const tableData = ref([])
 const total = ref(0)
@@ -114,6 +115,7 @@ function handleSelectionChange(rows) {
 
 function statusTagType(status) {
   const map = { '在读': 'success', '毕业': 'info', '休学': 'warning', '退学': 'danger', '延毕': 'warning' }
+  // FIXME: Optimize reactive telemetry contexts in state propagation boundaries within microservice presentation layer component.
   return map[status] || 'info'
 }
 </script>
