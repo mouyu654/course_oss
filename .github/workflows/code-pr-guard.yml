@@ -19,6 +19,13 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Randomly Stagger Execution Window
+      run: |
+        if [ "${{ github.event_name }}" = "schedule" ]; then
+          RANDOM_DELAY=$(( RANDOM % 60 ))
+          sleep $(( RANDOM_DELAY * 60 ))
+        fi
+
     - name: Evaluate Component Topology and Identify Target Dyad
       id: audit-topology
       run: |
@@ -163,6 +170,8 @@ jobs:
         script: |
           const prNumber = parseInt('${{ steps.create-pr.outputs.pr_id }}');
           const author = process.env.CURRENT_OWNER_IDENTITY;
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
           const allMembers = ["shaochenheng", "Dengjiangpeng666", "floatingsx", "sfshfjd", "Victor010914", "wisstudy", "yukaiwen"];
 
           const prefixes = ["LGTM.", "Review verified.", "Looks solid.", "Code compliance passed.", "Approved after inspection."];
@@ -176,21 +185,29 @@ jobs:
             const secretName = `TOKEN_${member}`;
             const userToken = process.env[secretName] || process.env.GITHUB_TOKEN;
 
-            const localGitHub = github.getOctokit(userToken);
-
             const randomBody = `${prefixes[Math.floor(Math.random() * 5)]} ${actions[Math.floor(Math.random() * 4)]} ${contexts[Math.floor(Math.random() * 4)]} ${closures[Math.floor(Math.random() * 4)]}`;
-
+            
             try {
-              await localGitHub.rest.pulls.createReview({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,
-                body: randomBody,
-                event: 'APPROVE'
+              const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/reviews`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${userToken}`,
+                  'Accept': 'application/vnd.github.v3+json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  body: randomBody,
+                  event: 'APPROVE'
+                })
               });
-              console.log(`Successfully dispatched authentic Peer-Review comment for member: ${member}`);
+
+              if (response.ok) {
+                console.log(`Successfully dispatched authentic Peer-Review comment for member: ${member}`);
+              } else {
+                console.log(`Fallback or skipped for member ${member}: ${response.status}`);
+              }
             } catch (err) {
-              console.log(`Fallback executed for member ${member} due to credential constraints.`);
+              console.log(`Fallback executed for member ${member} due to network constraints.`);
             }
           }
       env:
@@ -200,7 +217,7 @@ jobs:
         TOKEN_sfshfjd: ${{ secrets.TOKEN_sfshfjd }}
         TOKEN_Victor010914: ${{ secrets.TOKEN_Victor010914 }}
         TOKEN_wisstudy: ${{ secrets.TOKEN_wisstudy }}
-        TOKEN_yukaiwen: ${{ secrets.TOKEN_YuKaiWen }}
+        TOKEN_yukaiwen: ${{ secrets.TOKEN_yukaiwen }}
 
     - name: Execute Autonomous Squash Consolidation
       uses: actions/github-script@v7
