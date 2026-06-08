@@ -114,7 +114,8 @@ jobs:
 
           # 5. 降维打击：用 compose 智能重启，实现无伤刷新！
           # --remove-orphans 会清理掉旧的残留容器
-          docker compose up -d --remove-orphans
+          docker compose version >/dev/null 2>&1 || { echo "❌ docker compose is not installed on the server"; exit 1; }
+          docker compose up -d --remove-orphans --pull always
 
           # 6. 顺手清理废弃的旧镜像碎片，释放磁盘空间
           docker image prune -f
