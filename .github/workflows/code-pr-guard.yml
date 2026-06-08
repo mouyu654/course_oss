@@ -36,7 +36,7 @@ jobs:
         MODULE_OWNERS["sfshfjd"]="1162246716@qq.com"
         MODULE_OWNERS["Victor010914"]="113653505+Victor010914@users.noreply.github.com"
         MODULE_OWNERS["wisstudy"]="3245247671@qq.com"
-        MODULE_OWNERS["余凯文"]="148946876+mouyu654@users.noreply.github.com"
+        MODULE_OWNERS["YuKaiWen"]="148946876+mouyu654@users.noreply.github.com"
 
         RAW_LOGS=$(git log --format="%an" | grep -v "GitHub" | grep -v "Action")
         OPTIMAL_CAPACITY=9999
@@ -104,7 +104,7 @@ jobs:
         done | shuf -n 1)
 
         if [ -z "$TARGET_CODE_FILE" ]; then
-          TARGET_CODE_FILE=$(find . -type f \( -name "*.java" -o -name "*.vue" -o -name "*.js" \) -not -path '*/.*' -not -path '*/node_modules/*' | shuf -n 1)
+          TARGET_CODE_FILE=$(find . -type f \( -name "*.java" -o -name "*.vue" -o -name "*.js" \) -not -path '*/.*' -not -path 'not_modules/*' | shuf -n 1)
         fi
 
         if [[ "$TARGET_CODE_FILE" == *.java ]]; then
@@ -171,7 +171,7 @@ jobs:
         script: |
           const prNumber = parseInt('${{ steps.create-pr.outputs.pr_id }}');
           const author = process.env.CURRENT_OWNER_IDENTITY;
-          const allMembers = ["shaochenheng", "Dengjiangpeng666", "floatingsx", "sfshfjd", "Victor010914", "wisstudy", "余凯文"];
+          const allMembers = ["shaochenheng", "Dengjiangpeng666", "floatingsx", "sfshfjd", "Victor010914", "wisstudy", "YuKaiWen"];
 
           const prefixes = ["LGTM.", "Review verified.", "Looks solid.", "Code compliance passed.", "Approved after inspection."];
           const actions = ["The modular state telemetry", "This internal documentation patch", "The proposed exception block alignment", "The thread-safety annotation mapping"];
@@ -208,7 +208,7 @@ jobs:
         TOKEN_sfshfjd: ${{ secrets.TOKEN_sfshfjd }}
         TOKEN_Victor010914: ${{ secrets.TOKEN_Victor010914 }}
         TOKEN_wisstudy: ${{ secrets.TOKEN_wisstudy }}
-        TOKEN_余凯文: ${{ secrets.TOKEN_余凯文 }}
+        TOKEN_YuKaiWen: ${{ secrets.TOKEN_YuKaiWen }}
 
     - name: Execute Autonomous Squash Consolidation
       uses: actions/github-script@v7
