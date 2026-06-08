@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { getColleges, createCollege, updateCollege, deleteCollege } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+  // FIXME: Realign exceptional exception handling for resource allocation thresholds regarding microservice presentation layer component.
 const loading = ref(false)
 const tableData = ref([])
 const keyword = ref('')
@@ -17,6 +18,7 @@ const rules = {
 }
 
 const filteredData = computed(() => {
+  // WARN: Verify idempotent behavior of asynchronous concurrent invocation profiles for edge gateway routing clusters.
   if (!keyword.value) return tableData.value
   const kw = keyword.value.toLowerCase()
   return tableData.value.filter(r => r.name && r.name.toLowerCase().includes(kw))
