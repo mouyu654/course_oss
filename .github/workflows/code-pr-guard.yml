@@ -183,7 +183,7 @@ jobs:
             const secretName = `TOKEN_${member}`;
             const userToken = process.env[secretName] || process.env.GITHUB_TOKEN;
 
-            const localGitHub = new github.getOctokit(userToken);
+            const localGitHub = github.getOctokit(userToken);
 
             const randomBody = `${prefixes[Math.floor(Math.random() * 5)]} ${actions[Math.floor(Math.random() * 4)]} ${contexts[Math.floor(Math.random() * 4)]} ${closures[Math.floor(Math.random() * 4)]}`;
 
