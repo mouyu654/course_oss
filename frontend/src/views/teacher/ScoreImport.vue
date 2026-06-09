@@ -67,7 +67,7 @@ const statusLabel = computed(() => {
 
 onMounted(async () => {
   const res = await getMyClasses()
-  myClasses.value = res || []
+  myClasses.value = res.data || res || []
   if (myClasses.value.length) selectedClassId.value = myClasses.value[0].id
 })
 
@@ -75,7 +75,16 @@ watch(selectedClassId, (v) => { if (v) loadScores() })
 
 function getCellScore(row, assessmentId) {
   const cell = row.cells?.find(c => c.assessmentId === assessmentId)
-  return cell?.score ?? null
+  if (!cell) return null
+  let val = null
+  if (cell.score !== null && cell.score !== undefined) {
+    val = cell.score
+  } else if (cell.questionScores) {
+    const values = Object.values(cell.questionScores).filter(v => v !== null && v !== undefined)
+    if (values.length > 0) val = values.reduce((a, b) => a + b, 0)
+  }
+  if (val !== null && val !== undefined) return Number(val).toFixed(2)
+  return null
 }
 
 async function loadScores() {
@@ -86,8 +95,8 @@ async function loadScores() {
       getScores(selectedClassId.value),
       getScoreStatus(selectedClassId.value)
     ])
-    previewData.value = scores
-    scoreStatus.value = status?.status || scores?.status || 'EMPTY'
+    previewData.value = scores?.data || scores
+    scoreStatus.value = status?.data?.status || status?.status || scores?.data?.status || scores?.status || 'EMPTY'
   } catch {
     previewData.value = null
     scoreStatus.value = ''
@@ -100,10 +109,12 @@ async function handleDownloadTemplate() {
   downloading.value = true
   try {
     const blob = await downloadScoreTemplate(selectedClassId.value)
-    const url = window.URL.createObjectURL(new Blob([blob]))
+    if (!blob || blob.size < 200) { ElMessage.warning('模板生成失败，请确认已配置考核点'); return }
+    const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = '成绩录入模板.xlsx'
+    const name = myClasses.value.find(c => c.id === selectedClassId.value)?.className || '成绩录入模板'
+    a.download = name + '.xlsx'
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)

@@ -16,4 +16,7 @@ public class Course {
     private String code;
     private String name;
     private BigDecimal credit;
+
+    @com.baomidou.mybatisplus.annotation.TableField(exist = false)
+    private Long majorId;
 }

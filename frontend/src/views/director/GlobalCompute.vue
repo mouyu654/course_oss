@@ -49,7 +49,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import { getCalcRadarData, getGlobalResults } from '@/api/academic'
+import { getMajorRadar, getGlobalResults } from '@/api/academic'
 import { getGradReqs } from '@/api/director'
 import { getSemesters, getMajors } from '@/api/admin'
 import * as echarts from 'echarts'
@@ -78,13 +78,20 @@ onBeforeUnmount(() => {
   chartInstance?.dispose()
 })
 
+function getEnrollmentYear() {
+  const sem = semesterOptions.value.find(s => s.id === selectedSemesterId.value)
+  if (!sem?.academicYear) return null
+  return parseInt(sem.academicYear.split('-')[0])
+}
+
 async function loadData() {
   if (!selectedMajorId.value || !selectedSemesterId.value) return
+  const enrollmentYear = getEnrollmentYear()
   loading.value = true
   try {
     const [radarRes, resultsRes, gradReqsRes] = await Promise.all([
-      getCalcRadarData({ majorId: selectedMajorId.value, semesterId: selectedSemesterId.value }),
-      getGlobalResults({ majorId: selectedMajorId.value, semesterId: selectedSemesterId.value }),
+      getMajorRadar({ majorId: selectedMajorId.value, enrollmentYear }),
+      getGlobalResults({ majorId: selectedMajorId.value, enrollmentYear }),
       getGradReqs(selectedMajorId.value)
     ])
     const radar = radarRes?.data || radarRes
