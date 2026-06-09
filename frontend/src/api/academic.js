@@ -21,7 +21,7 @@ export function getCourseClasses(courseId) {
 export function importStudents(file) {
   const formData = new FormData()
   formData.append('file', file)
-  return request({ url: '/students/import', method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+  return request({ url: '/students/import', method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 })
 }
 export function getStudents(params) {
   return request({ url: '/students', method: 'get', params })
@@ -83,6 +83,9 @@ export function getCalcBatches(params) {
 export function getCalcRadarData(params) {
   return request({ url: '/reports/major/data', method: 'get', params })
 }
+export function getMajorRadar(params) {
+  return request({ url: '/reports/major/data', method: 'get', params })
+}
 export function deleteCalcBatch(params) {
   return request({ url: '/reports/major/data', method: 'delete', params })
 }
@@ -103,20 +106,20 @@ export function downloadClassStudentTemplate() {
 export function batchImportStudents(file) {
   const formData = new FormData()
   formData.append('file', file)
-  return request({ url: '/batch-import/students', method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+  return request({ url: '/batch-import/students', method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 })
 }
 export function batchImportCourses(file) {
   const formData = new FormData()
   formData.append('file', file)
-  return request({ url: '/batch-import/courses', method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+  return request({ url: '/batch-import/courses', method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 })
 }
 export function batchImportAdminClassStudents(classId, file) {
   const formData = new FormData()
   formData.append('file', file)
-  return request({ url: `/batch-import/admin-classes/${classId}/students`, method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+  return request({ url: `/batch-import/admin-classes/${classId}/students`, method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 })
 }
 export function batchImportTeachingClassStudents(classId, file) {
   const formData = new FormData()
   formData.append('file', file)
-  return request({ url: `/batch-import/teaching-classes/${classId}/students`, method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+  return request({ url: `/batch-import/teaching-classes/${classId}/students`, method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 })
 }
