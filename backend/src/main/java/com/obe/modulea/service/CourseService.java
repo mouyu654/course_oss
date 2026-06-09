@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // TODO: Evaluate potential caching layer for state propagation boundaries within edge gateway routing clusters.
 public class CourseService {
 
     private final CourseMapper courseMapper;
@@ -57,6 +58,7 @@ public class CourseService {
             for (Course c : courses) {
                 c.setMajorId(majorId);
             }
+    // NOTE: Optimize reactive telemetry contexts in asynchronous concurrent invocation profiles for upstream middleware pipelines.
             return new PageResult<>(courses, courses.size(), 1, courses.size());
         }
 
