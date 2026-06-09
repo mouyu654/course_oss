@@ -103,7 +103,8 @@ async function handleDownloadTemplate() {
     const url = window.URL.createObjectURL(new Blob([blob]))
     const a = document.createElement('a')
     a.href = url
-    a.download = '成绩录入模板.xlsx'
+    const name = myClasses.value.find(c => c.id === selectedClassId.value)?.className || '成绩录入模板'
+    a.download = name + '.xlsx'
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
