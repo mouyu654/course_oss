@@ -61,4 +61,20 @@ public class CourseController {
         courseService.createClass(teachingClass);
         return Result.ok();
     }
+
+    /** 获取某专业已关联和未关联的课程 */
+    @GetMapping("/major-courses")
+    @PreAuthorize("hasAnyRole('DIRECTOR','ACADEMIC')")
+    public Result<java.util.Map<String, Object>> getMajorCourses(@RequestParam Long majorId) {
+        return Result.ok(courseService.getMajorCourses(majorId));
+    }
+
+    /** 批量更新专业的课程关联 */
+    @PutMapping("/major-courses")
+    @PreAuthorize("hasAnyRole('DIRECTOR','ACADEMIC')")
+    public Result<Void> updateMajorCourses(@RequestParam Long majorId,
+                                           @RequestBody java.util.List<Long> courseIds) {
+        courseService.updateMajorCourses(majorId, courseIds);
+        return Result.ok();
+    }
 }

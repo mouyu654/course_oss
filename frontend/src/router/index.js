@@ -125,6 +125,12 @@ const routes = [
         meta: { title: '宏观支撑矩阵', icon: 'Grid' }
       },
       {
+        path: 'course-major',
+        name: 'DirectorCourseMajor',
+        component: () => import('@/views/director/CourseMajorManage.vue'),
+        meta: { title: '专业课程关联', icon: 'Connection' }
+      },
+      {
         path: 'global-compute',
         name: 'DirectorGlobalCompute',
         component: () => import('@/views/director/GlobalCompute.vue'),
