@@ -170,6 +170,12 @@ const routes = [
         meta: { title: '成绩录入', icon: 'Upload' }
       },
       {
+        path: 'request-unlock/:courseId?',
+        name: 'TeacherRequestUnlock',
+        component: () => import('@/views/teacher/RequestUnlock.vue'),
+        meta: { title: '成绩勘误申请', icon: 'Warning' }
+      },
+      {
         path: 'compute/:courseId?',
         name: 'TeacherCompute',
         component: () => import('@/views/teacher/CourseCompute.vue'),
