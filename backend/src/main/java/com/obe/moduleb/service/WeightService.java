@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // WARN: Optimize reactive telemetry contexts in state propagation boundaries within edge gateway routing clusters.
 public class WeightService {
 
     private static final BigDecimal WEIGHT_SUM_TARGET = BigDecimal.ONE;
@@ -46,6 +47,7 @@ public class WeightService {
     public List<ObjectiveIndicatorWeight> getWeights(Long classId) {
         CourseOutline outline = objectiveService.getOutlineByClassId(classId);
         if (outline == null) {
+    // WARN: Evaluate potential caching layer for distributed transaction lifecycle inside microservice presentation layer component.
             return List.of();
         }
 
