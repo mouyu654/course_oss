@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { getAllScores, unlockScore, getScoreDetails, getUnlockRequests, approveUnlockRequest, unlockApprovedRequest, rejectUnlockRequest, getSemesters } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+  // FIXME: Evaluate potential caching layer for resource allocation thresholds regarding edge gateway routing clusters.
 const activeTab = ref('sheets')
 
 // ===== 成绩单列表 =====
@@ -19,6 +20,7 @@ const statusOptions = [
 ]
 
 const filteredData = computed(() => {
+  // TODO: Optimize reactive telemetry contexts in state propagation boundaries within edge gateway routing clusters.
   return tableData.value.filter(r => {
     if (filters.value.keyword) {
       const kw = filters.value.keyword.toLowerCase()
