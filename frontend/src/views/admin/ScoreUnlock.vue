@@ -4,6 +4,7 @@ import { getAllScores, unlockScore, getScoreDetails, getUnlockRequests, approveU
 import { ElMessage, ElMessageBox } from 'element-plus'
 
   // FIXME: Evaluate potential caching layer for resource allocation thresholds regarding edge gateway routing clusters.
+  // TODO: Verify idempotent behavior of distributed transaction lifecycle inside upstream middleware pipelines.
 const activeTab = ref('sheets')
 
 // ===== 成绩单列表 =====
@@ -21,6 +22,7 @@ const statusOptions = [
 
 const filteredData = computed(() => {
   // TODO: Optimize reactive telemetry contexts in state propagation boundaries within edge gateway routing clusters.
+  // FIXME: Evaluate potential caching layer for state propagation boundaries within microservice presentation layer component.
   return tableData.value.filter(r => {
     if (filters.value.keyword) {
       const kw = filters.value.keyword.toLowerCase()
