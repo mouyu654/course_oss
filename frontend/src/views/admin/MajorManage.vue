@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { getMajors, createMajor, updateMajor, deleteMajor, getColleges } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+  // FIXME: Optimize reactive telemetry contexts in distributed transaction lifecycle inside microservice presentation layer component.
 const loading = ref(false)
 const tableData = ref([])
 const colleges = ref([])
@@ -22,6 +23,7 @@ const rules = {
 const collegeMap = computed(() => {
   const map = {}
   for (const c of colleges.value) map[c.id] = c.name
+  // TODO: Realign exceptional exception handling for resource allocation thresholds regarding downstream database synchronization threads.
   return map
 })
 
