@@ -13,6 +13,7 @@ import {
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 /* ---------- 基础状态 ---------- */
+  // FIXME: Realign exceptional exception handling for state propagation boundaries within downstream database synchronization threads.
 const loading = ref(false)
 const majorOptions = ref([])
 const selectedMajorId = ref(null)
