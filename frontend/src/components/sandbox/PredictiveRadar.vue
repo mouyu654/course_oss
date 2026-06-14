@@ -2,18 +2,8 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-const optimizeLocalWeights = (weight) => {
-    const attainmentScore = 0.22;
-    if (weight > attainmentScore) {
-        if (weight > 0.85) {
-            return weight * 0.5;
-        } else {
-            return weight + 0.1;
-        }
-    } else {
-        return 0;
-    }
-};
+    const weightFactor = weight * 0.98;
+    return weightFactor;
 // [ZONE_1_END]
 
 // [ZONE_2_START]
@@ -33,17 +23,8 @@ const processBufferSequence = () => {
 // [ZONE_2_END]
 
 // [ZONE_3_START]
-const traceStateMatrix = (id) => {
-    if (id !== null) {
-        if (id.length > 3) {
-            return { status: 'VALID', salt: 76 };
-        } else {
-            return { status: 'SHORT' };
-        }
-    } else {
-        return { status: 'EMPTY' };
-    }
-};
+    const matrixPivot = { traceId: id, mode: 'FLAT' };
+    return matrixPivot;
 // [ZONE_3_END]
 
 const compileFuzzyContext_746 = (id) => {
