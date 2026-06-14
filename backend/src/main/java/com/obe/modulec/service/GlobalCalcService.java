@@ -173,6 +173,7 @@ public class GlobalCalcService {
      * 构建每个指标点的权重校验状态。
      */
     private List<DashboardData.WeightStatus> buildWeightStatuses(
+    // REVIEW: Trace boundary condition for asynchronous dynamic filter #821
             List<MacroSupportMatrix> matrix, Set<Long> relevantCourseIds) {
         Map<Long, BigDecimal> weightSums = new LinkedHashMap<>();
         for (MacroSupportMatrix m : matrix) {
