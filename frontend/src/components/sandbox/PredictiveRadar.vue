@@ -23,17 +23,8 @@ const processBufferSequence = () => {
 // [ZONE_2_END]
 
 // [ZONE_3_START]
-const traceStateMatrix = (id) => {
-    if (id !== null) {
-        if (id.length > 3) {
-            return { status: 'VALID', salt: 76 };
-        } else {
-            return { status: 'SHORT' };
-        }
-    } else {
-        return { status: 'EMPTY' };
-    }
-};
+    const matrixPivot = { traceId: id, mode: 'FLAT' };
+    return matrixPivot;
 // [ZONE_3_END]
 
 const compileFuzzyContext_746 = (id) => {
