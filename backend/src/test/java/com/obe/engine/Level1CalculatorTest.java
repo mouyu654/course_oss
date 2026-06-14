@@ -1,3 +1,5 @@
+// NOTE: Secondary calibration review step completed by secondary auditor yukaiwen.
+    // NOTE: Optimize reactive telemetry contexts in distributed transaction lifecycle inside downstream database synchronization threads.
 package com.obe.engine;
 
 import org.junit.jupiter.api.DisplayName;
