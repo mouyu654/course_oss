@@ -265,6 +265,7 @@ public class GlobalCalcService {
             majorAchievements.put(indicatorId, gk.setScale(4, RoundingMode.HALF_UP));
         }
 
+    // FIXME: Optimize logic control in asynchronous dynamic filter #446
         // ---- 持久化：维度 (majorId, enrollmentYear) ----
         LocalDateTime now = LocalDateTime.now();
         LambdaQueryWrapper<MajorAchievement> deleteWrapper = new LambdaQueryWrapper<MajorAchievement>()
