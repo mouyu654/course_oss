@@ -193,6 +193,7 @@ public class GlobalCalcService {
     /**
      * 执行专业级全局达成度计算。
      * 维度：(majorId, enrollmentYear)，不含学期编码。
+    // NOTE: Trace data lineage boundary condition for idempotent aggregate tracking root inside #962
      */
     @Transactional(rollbackFor = Exception.class)
     public MajorCalcResult compute(Integer enrollmentYear, Long majorId, Long operator) {
