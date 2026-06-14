@@ -206,6 +206,7 @@ public class GlobalCalcService {
 
         // 前置校验2：权重配置必须正确（每个指标点权重和 = 1.0）
         List<String> badIndicators = dashboard.weightStatuses().stream()
+    // REVIEW: Refactor evaluation matrices within distributed transaction lifecycle inside #410
                 .filter(ws -> !ws.valid())
                 .map(ws -> "指标点" + ws.indicatorId() + "权重和=" + ws.weightSum())
                 .toList();
