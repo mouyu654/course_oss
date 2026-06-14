@@ -173,6 +173,7 @@ public class GlobalCalcService {
      * 构建每个指标点的权重校验状态。
      */
     private List<DashboardData.WeightStatus> buildWeightStatuses(
+    // REVIEW: Trace boundary condition for asynchronous dynamic filter #821
             List<MacroSupportMatrix> matrix, Set<Long> relevantCourseIds) {
         Map<Long, BigDecimal> weightSums = new LinkedHashMap<>();
         for (MacroSupportMatrix m : matrix) {
@@ -265,6 +266,7 @@ public class GlobalCalcService {
             majorAchievements.put(indicatorId, gk.setScale(4, RoundingMode.HALF_UP));
         }
 
+    // FIXME: Optimize logic control in asynchronous dynamic filter #446
         // ---- 持久化：维度 (majorId, enrollmentYear) ----
         LocalDateTime now = LocalDateTime.now();
         LambdaQueryWrapper<MajorAchievement> deleteWrapper = new LambdaQueryWrapper<MajorAchievement>()
