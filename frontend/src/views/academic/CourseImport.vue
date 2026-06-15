@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getCourses, createCourse, updateCourse, deleteCourse } from '@/api/academic'
+import { getMajors } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const loading = ref(false)
@@ -13,7 +14,8 @@ const dialogVisible = ref(false)
 const isEdit = ref(false)
 const submitting = ref(false)
 const formRef = ref(null)
-const form = ref({ code: '', name: '', credit: null })
+const majorOptions = ref([])
+const form = ref({ code: '', name: '', credit: null, majorId: null })
 
 const rules = {
   code: [{ required: true, message: '请输入课程代码', trigger: 'blur' }],
@@ -21,8 +23,13 @@ const rules = {
   credit: [{ required: true, type: 'number', message: '请输入学分', trigger: 'blur' }]
 }
 
-onMounted(() => {
-  loadData()
+const majorNameMap = ref({}) // id → name
+
+onMounted(async () => {
+  const [majRes] = await Promise.all([getMajors(), loadData()])
+  const list = majRes.data?.records || majRes.data || []
+  majorOptions.value = list
+  for (const m of list) majorNameMap.value[m.id] = m.name
 })
 
 async function loadData() {
@@ -44,7 +51,7 @@ function handleSizeChange(s) { size.value = s; page.value = 1; loadData() }
 
 function handleAdd() {
   isEdit.value = false
-  form.value = { code: '', name: '', credit: null }
+  form.value = { code: '', name: '', credit: null, majorId: null }
   dialogVisible.value = true
 }
 
@@ -52,7 +59,7 @@ function handleEdit(row) {
   isEdit.value = true
   form.value = {
     id: row.id, code: row.code, name: row.name,
-    credit: row.credit
+    credit: row.credit, majorId: row.majorId || null
   }
   dialogVisible.value = true
 }
@@ -103,6 +110,9 @@ async function handleSubmit() {
         <el-table-column prop="code" label="课程代码" width="120" />
         <el-table-column prop="name" label="课程名称" min-width="160" />
         <el-table-column prop="credit" label="学分" width="80" align="center" />
+        <el-table-column label="所属专业" width="160" align="center">
+          <template #default="{ row }">{{ majorNameMap[row.majorId] || '-' }}</template>
+        </el-table-column>
         <el-table-column label="操作" width="140" align="center">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleEdit(row)">修改</el-button>
@@ -133,6 +143,11 @@ async function handleSubmit() {
         </el-form-item>
         <el-form-item label="学分" prop="credit">
           <el-input-number v-model="form.credit" :min="0.5" :max="20" :step="0.5" style="width:100%" />
+        </el-form-item>
+        <el-form-item label="所属专业">
+          <el-select v-model="form.majorId" placeholder="请选择专业（可选）" clearable filterable style="width:100%">
+            <el-option v-for="m in majorOptions" :key="m.id" :label="m.name" :value="m.id" />
+          </el-select>
         </el-form-item>
       </el-form>
       <template #footer>

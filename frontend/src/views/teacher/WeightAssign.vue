@@ -52,12 +52,16 @@ async function loadData() {
 
 /* ---- matrix helpers ---- */
 function getCell(objId, indId) {
-  return weightMap.value[`${objId}_${indId}`] ?? ''
+  return weightMap.value[`${objId}_${indId}`] ?? undefined
 }
 
 function setCell(objId, indId, val) {
-  const num = val === '' ? '' : parseFloat(val)
-  weightMap.value[`${objId}_${indId}`] = isNaN(num) ? 0 : num
+  if (val === '' || val === null || val === undefined) {
+    weightMap.value[`${objId}_${indId}`] = undefined
+    return
+  }
+  const num = parseFloat(val)
+  weightMap.value[`${objId}_${indId}`] = isNaN(num) ? undefined : num
 }
 
 const columnSums = computed(() => {
@@ -154,11 +158,16 @@ async function handleSubmit() {
                 <span class="obj-desc">{{ obj.description }}</span>
               </td>
               <td v-for="ind in indicators" :key="ind.id" class="cell">
-                <el-input
+                <el-input-number
                   :model-value="getCell(obj.id, ind.id)"
                   @update:model-value="v => setCell(obj.id, ind.id, v)"
+                  :min="0"
+                  :max="1"
+                  :step="0.05"
+                  :precision="4"
+                  :controls="false"
                   size="small"
-                  style="width: 72px;"
+                  style="width: 85px;"
                   placeholder="-"
                 />
               </td>

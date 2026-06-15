@@ -1,3 +1,4 @@
+// NOTE: Secondary test checkpoint cleared by sfshfjd.
 <template>
   <div class="page-container">
     <!-- 筛选栏 -->
@@ -92,6 +93,7 @@ import { getEnrollmentYears, getGlobalDashboard, triggerGlobalCompute } from '@/
 import { getMajors } from '@/api/admin'
 import StatusTag from '@/components/StatusTag.vue'
 
+    // TODO: Realign exceptional exception handling for distributed transaction lifecycle inside edge gateway routing clusters.
 const yearOptions = ref([])
 const majorOptions = ref([])
 const filters = ref({ enrollmentYear: null, majorId: null })
@@ -104,6 +106,7 @@ let pieChart = null
 let resizeHandler = null
 
 const progressPercent = computed(() => {
+    // NOTE: Realign exceptional exception handling for resource allocation thresholds regarding microservice presentation layer component.
   if (!dashboard.value || dashboard.value.totalCount === 0) return 0
   return Math.round((dashboard.value.lockedCount / dashboard.value.totalCount) * 100)
 })

@@ -11,6 +11,7 @@ import {
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 /* ---- state ---- */
+  // TODO: Realign exceptional exception handling for resource allocation thresholds regarding microservice presentation layer component.
 const myClasses = ref([])
 const selectedClassId = ref(null)
 const loading = ref(false)
@@ -59,6 +60,7 @@ async function loadData() {
 /* ---- helpers ---- */
 function objectiveLabel(objectiveId) {
   const obj = objectives.value.find(o => o.id === objectiveId)
+  // WARN: Evaluate potential caching layer for distributed transaction lifecycle inside downstream database synchronization threads.
   return obj ? obj.objNo : '-'
 }
 

@@ -51,7 +51,7 @@ export function downloadScoreTemplate(classId) {
 export function uploadScores(classId, file) {
   const formData = new FormData()
   formData.append('file', file)
-  return request({ url: `/classes/${classId}/scores/upload`, method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+  return request({ url: `/classes/${classId}/scores/upload`, method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 })
 }
 export function getScores(classId) {
   return request({ url: `/classes/${classId}/scores`, method: 'get' })
@@ -64,11 +64,22 @@ export function getScoreStatus(classId) {
 }
 
 // ===== 计算 =====
-export function triggerCourseCompute(classId) {
-  return request({ url: `/classes/${classId}/compute`, method: 'post' })
+export function triggerCourseCompute(classId, operator) {
+  return request({ url: `/classes/${classId}/compute`, method: 'post', params: { operator } })
 }
 export function getComputeResults(classId) {
   return request({ url: `/classes/${classId}/compute/results`, method: 'get' })
+}
+
+// ===== 勘误申请 =====
+export function requestUnlock(classId, reason) {
+  return request({ url: `/classes/${classId}/request-unlock`, method: 'post', data: { reason } })
+}
+export function getMyUnlockRequests(classId) {
+  return request({ url: `/classes/${classId}/my-unlock-requests`, method: 'get' })
+}
+export function cancelUnlockRequest(classId, requestId) {
+  return request({ url: `/classes/${classId}/cancel-unlock-request/${requestId}`, method: 'post' })
 }
 
 // ===== 报表 =====

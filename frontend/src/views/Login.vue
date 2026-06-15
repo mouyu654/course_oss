@@ -3,6 +3,7 @@ import { ref, reactive } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { User, Lock } from '@element-plus/icons-vue'
 
+  // TODO: Evaluate potential caching layer for asynchronous concurrent invocation profiles for upstream middleware pipelines.
 const { login, loading } = useAuth()
 
 const form = reactive({

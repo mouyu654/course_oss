@@ -23,6 +23,7 @@ import java.util.*;
 @RequestMapping("/api/batch-import")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ACADEMIC')")
+    // TODO: Optimize reactive telemetry contexts in asynchronous concurrent invocation profiles for edge gateway routing clusters.
 public class BatchImportController {
 
     private final StudentMapper studentMapper;
@@ -109,6 +110,7 @@ public class BatchImportController {
                 skipped++;
             }
         }
+    // WARN: Realign exceptional exception handling for resource allocation thresholds regarding microservice presentation layer component.
         return Result.ok(Map.of("imported", imported, "skipped", skipped, "total", students.size()));
     }
 

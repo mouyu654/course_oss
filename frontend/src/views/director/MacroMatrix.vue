@@ -39,106 +39,55 @@ async function loadData() {
   if (!selectedMajorId.value) return
   loading.value = true
   try {
-    const res = await getMacroMatrix(selectedMajorId.value)
-    const list = res.data || []
-    if (list.length === 0) {
-      resetMatrix()
-      return
+    // 始终加载全部课程和全部指标点，再覆盖已有权重
+    const [matrixRes, courseRes, gradRes] = await Promise.all([
+      getMacroMatrix(selectedMajorId.value),
+      getCourses({ majorId: selectedMajorId.value, size: 999 }),
+      getGradReqs(selectedMajorId.value)
+    ])
+    const matrixList = matrixRes.data || []
+
+    // 构建本专业关联的课程
+    const allCourses = (courseRes.data?.records || courseRes.data || [])
+    courses.value = allCourses.map(c => ({ id: c.id, courseName: c.name || c.courseName }))
+      .sort((a, b) => a.id - b.id)
+
+    // 构建全部指标点
+    const reqs = gradRes.data || []
+    const allIndicators = []
+    for (const req of reqs) {
+      for (const ind of (req.indicators || [])) {
+        allIndicators.push({ id: ind.id, indicatorNo: ind.indicatorNo, content: ind.content || '' })
+      }
     }
-    buildPivot(list)
+    indicators.value = allIndicators.sort((a, b) =>
+      String(a.indicatorNo).localeCompare(String(b.indicatorNo), undefined, { numeric: true })
+    )
+
+    // 填充已有权重
+    const wMap = {}
+    for (const r of matrixList) {
+      wMap[`${r.courseId}_${r.indicatorId}`] = r.weight
+    }
+    weights.value = wMap
   } finally {
     loading.value = false
   }
 }
 
-async function buildPivot(list) {
-  // 收集唯一的 courseId / indicatorId
-  const courseIds = [...new Set(list.map(r => r.courseId))]
-  const indicatorIds = [...new Set(list.map(r => r.indicatorId))]
-
-  // 探测后端是否已返回名称字段
-  const hasCourseName = list.some(r => r.courseName)
-  const hasIndicatorNo = list.some(r => r.indicatorNo)
-
-  // 构建课程映射
-  let courseMap = {}
-  if (hasCourseName) {
-    for (const r of list) {
-      if (r.courseName && !courseMap[r.courseId]) {
-        courseMap[r.courseId] = { id: r.courseId, courseName: r.courseName }
-      }
-    }
-  }
-
-  // 构建指标点映射
-  let indMap = {}
-  if (hasIndicatorNo) {
-    for (const r of list) {
-      if (r.indicatorNo && !indMap[r.indicatorId]) {
-        indMap[r.indicatorId] = { id: r.indicatorId, indicatorNo: r.indicatorNo, content: r.content || '' }
-      }
-    }
-  }
-
-  // 如果后端未返回名称，通过额外 API 获取
-  const fallbackPromises = []
-  if (!hasCourseName) {
-    fallbackPromises.push(
-      getCourses({ size: 999 }).then(r => {
-        const rows = r.data?.records || r.data || []
-        for (const c of rows) {
-          if (courseIds.includes(c.id)) {
-            courseMap[c.id] = { id: c.id, courseName: c.name || c.courseName }
-          }
-        }
-      })
-    )
-  }
-  if (!hasIndicatorNo) {
-    fallbackPromises.push(
-      getGradReqs(selectedMajorId.value).then(r => {
-        const reqs = r.data || []
-        for (const req of reqs) {
-          for (const ind of (req.indicators || [])) {
-            if (indicatorIds.includes(ind.id)) {
-              indMap[ind.id] = { id: ind.id, indicatorNo: ind.indicatorNo, content: ind.content || '' }
-            }
-          }
-        }
-      })
-    )
-  }
-  if (fallbackPromises.length) {
-    await Promise.all(fallbackPromises)
-  }
-
-  // 排序课程：按 ID 升序
-  courses.value = courseIds
-    .map(id => courseMap[id] || { id, courseName: `课程#${id}` })
-    .sort((a, b) => a.id - b.id)
-
-  // 排序指标点：按编号自然排序
-  indicators.value = indicatorIds
-    .map(id => indMap[id] || { id, indicatorNo: `${id}`, content: '' })
-    .sort((a, b) => String(a.indicatorNo).localeCompare(String(b.indicatorNo), undefined, { numeric: true }))
-
-  // 填充权重
-  const wMap = {}
-  for (const r of list) {
-    wMap[`${r.courseId}_${r.indicatorId}`] = r.weight
-  }
-  weights.value = wMap
-}
-
 /* ---------- 权重读写 ---------- */
 function getWeight(courseId, indicatorId) {
   const v = weights.value[`${courseId}_${indicatorId}`]
-  return v !== null && v !== undefined ? v : ''
+  return v !== null && v !== undefined ? v : undefined
 }
 
 function setWeight(courseId, indicatorId, value) {
-  const num = value === '' || value === null ? null : parseFloat(value)
-  weights.value[`${courseId}_${indicatorId}`] = isNaN(num) ? null : num
+  if (value === '' || value === null || value === undefined) {
+    weights.value[`${courseId}_${indicatorId}`] = undefined
+    return
+  }
+  const num = parseFloat(value)
+  weights.value[`${courseId}_${indicatorId}`] = isNaN(num) ? undefined : num
 }
 
 /* ---------- 列合计与校验 ---------- */
@@ -251,11 +200,16 @@ async function handleSubmit() {
                   :key="ind.id"
                   class="cell-input"
                 >
-                  <el-input
+                  <el-input-number
                     :model-value="getWeight(course.id, ind.id)"
                     @update:model-value="v => setWeight(course.id, ind.id, v)"
+                    :min="0"
+                    :max="1"
+                    :step="0.05"
+                    :precision="4"
+                    :controls="false"
                     size="small"
-                    style="width: 72px;"
+                    style="width: 85px;"
                     placeholder="-"
                   />
                 </td>
