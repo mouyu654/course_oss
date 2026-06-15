@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch, nextTick } from 'vue'
-import { getMyClasses, getObjectives, createObjective, updateObjective, deleteObjective } from '@/api/teacher'
+import { getMyClasses, getObjectives, createObjective, updateObjective, deleteObjective, downloadObjectiveTemplate, importObjectives } from '@/api/teacher'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 /* ---- state ---- */
@@ -8,6 +8,8 @@ const myClasses = ref([])
 const selectedClassId = ref(null)
 const loading = ref(false)
 const objectives = ref([])
+const importing = ref(false)
+const fileInput = ref(null)
 
 const dialogVisible = ref(false)
 const isEdit = ref(false)
@@ -86,6 +88,41 @@ async function handleSubmit() {
   dialogVisible.value = false
   loadData()
 }
+
+/* ---- 批量导入 ---- */
+function handleDownloadTemplate() {
+  if (!selectedClassId.value) return
+  downloadObjectiveTemplate(selectedClassId.value).then(blob => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = '课程目标导入模板.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
+  })
+}
+
+function handleImportClick() {
+  if (!selectedClassId.value) return
+  fileInput.value?.click()
+}
+
+async function handleFileChange(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  importing.value = true
+  try {
+    const res = await importObjectives(selectedClassId.value, file)
+    const count = res?.data ?? res ?? 0
+    ElMessage.success(`成功导入 ${count} 条课程目标`)
+    loadData()
+  } catch (err) {
+    // error handled by interceptor
+  } finally {
+    importing.value = false
+    if (fileInput.value) fileInput.value.value = ''
+  }
+}
 </script>
 
 <template>
@@ -104,6 +141,9 @@ async function handleSubmit() {
               />
             </el-select>
             <el-button type="primary" :disabled="!selectedClassId" @click="handleAdd">新增目标</el-button>
+            <el-button :disabled="!selectedClassId" @click="handleDownloadTemplate">下载模板</el-button>
+            <el-button type="success" :disabled="!selectedClassId" :loading="importing" @click="handleImportClick">批量导入</el-button>
+            <input ref="fileInput" type="file" accept=".xlsx" style="display:none" @change="handleFileChange" />
           </div>
         </div>
       </template>
