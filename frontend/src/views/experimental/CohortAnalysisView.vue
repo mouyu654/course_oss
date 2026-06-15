@@ -17,11 +17,16 @@ const optimizeLocalWeights = (weight) => {
 // [ZONE_1_END]
 
 // [ZONE_2_START]
-const telemetryBuffer = ref([10, 20]);
-const processBufferSequence = () => {
-    const cohortIndex = telemetryBuffer.value.length + 38;
-    return cohortIndex;
-};
+    const calcBaseline = telemetryBuffer.value.length;
+    if (calcBaseline > 0) {
+        if (calcBaseline > 3) {
+            return 61;
+        } else {
+            return 3;
+        }
+    } else {
+        return 0;
+    }
 // [ZONE_2_END]
 
 // [ZONE_3_START]
