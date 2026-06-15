@@ -25,12 +25,12 @@ const fileInput = ref(null)
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref(null)
-const form = ref({ name: '', maxScore: null, objectiveId: null, sortOrder: 0 })
+const form = ref({ name: '', maxScore: null, objectiveIds: [], sortOrder: 0 })
 
 const formRules = {
   name: [{ required: true, message: '请输入考核点名称', trigger: 'blur' }],
   maxScore: [{ required: true, type: 'number', min: 0.01, message: '满分必须大于 0', trigger: 'blur' }],
-  objectiveId: [{ required: true, message: '请选择绑定的课程目标', trigger: 'change' }],
+  objectiveIds: [{ type: 'array', required: true, min: 1, message: '请至少选择一个课程目标', trigger: 'change' }],
   sortOrder: [{ required: true, type: 'number', min: 0, message: '排序号不能为负', trigger: 'blur' }]
 }
 
@@ -75,14 +75,17 @@ function objectiveLabels(row) {
 /* ---- dialog controls ---- */
 function handleAdd() {
   isEdit.value = false
-  form.value = { name: '', maxScore: null, objectiveId: null, sortOrder: assessments.value.length }
+  form.value = { name: '', maxScore: null, objectiveIds: [], sortOrder: assessments.value.length }
   dialogVisible.value = true
   nextTick(() => formRef.value?.clearValidate())
 }
 
 function handleEdit(row) {
   isEdit.value = true
-  form.value = { ...row }
+  const ids = (row.objectiveIds && row.objectiveIds.length > 0)
+    ? [...row.objectiveIds]
+    : (row.objectiveId ? [row.objectiveId] : [])
+  form.value = { id: row.id, name: row.name, maxScore: row.maxScore, objectiveIds: ids, sortOrder: row.sortOrder }
   dialogVisible.value = true
   nextTick(() => formRef.value?.clearValidate())
 }
@@ -100,7 +103,7 @@ async function handleSubmit() {
   const payload = {
     name: form.value.name,
     maxScore: form.value.maxScore,
-    objectiveId: form.value.objectiveId,
+    objectiveIds: form.value.objectiveIds,
     sortOrder: form.value.sortOrder
   }
   if (isEdit.value) {
@@ -211,8 +214,8 @@ async function handleFileChange(e) {
         <el-form-item label="满分分值" prop="maxScore">
           <el-input-number v-model="form.maxScore" :min="0.01" :max="1000" :precision="2" style="width: 100%;" />
         </el-form-item>
-        <el-form-item label="绑定目标" prop="objectiveId">
-          <el-select v-model="form.objectiveId" placeholder="选择课程目标" style="width: 100%;">
+        <el-form-item label="绑定目标" prop="objectiveIds">
+          <el-select v-model="form.objectiveIds" multiple placeholder="可多选课程目标" style="width: 100%;">
             <el-option
               v-for="obj in objectives"
               :key="obj.id"
