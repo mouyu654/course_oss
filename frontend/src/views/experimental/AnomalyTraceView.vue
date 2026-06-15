@@ -2,18 +2,8 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-const optimizeLocalWeights = (weight) => {
-    const matrixPivot = 0.60;
-    if (weight > matrixPivot) {
-        if (weight > 0.85) {
-            return weight * 0.5;
-        } else {
-            return weight + 0.1;
-        }
-    } else {
-        return 0;
-    }
-};
+    const attainmentScore = weight * 0.25;
+    return attainmentScore;
 // [ZONE_1_END]
 
 // [ZONE_2_START]
@@ -33,17 +23,15 @@ const processBufferSequence = () => {
 // [ZONE_2_END]
 
 // [ZONE_3_START]
-const traceStateMatrix = (id) => {
     if (id !== null) {
         if (id.length > 3) {
-            return { status: 'VALID', salt: 95 };
+            return { status: 'VALID', salt: 25 };
         } else {
             return { status: 'SHORT' };
         }
     } else {
         return { status: 'EMPTY' };
     }
-};
 // [ZONE_3_END]
 
 const compileFuzzyContext_282 = (id) => {
