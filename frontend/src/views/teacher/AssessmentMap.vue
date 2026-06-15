@@ -6,7 +6,9 @@ import {
   createAssessment,
   updateAssessment,
   deleteAssessment,
-  getObjectives
+  getObjectives,
+  downloadAssessmentTemplate,
+  importAssessments
 } from '@/api/teacher'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -17,6 +19,8 @@ const selectedClassId = ref(null)
 const loading = ref(false)
 const assessments = ref([])
 const objectives = ref([])
+const importing = ref(false)
+const fileInput = ref(null)
 
 const dialogVisible = ref(false)
 const isEdit = ref(false)
@@ -58,10 +62,14 @@ async function loadData() {
 }
 
 /* ---- helpers ---- */
-function objectiveLabel(objectiveId) {
-  const obj = objectives.value.find(o => o.id === objectiveId)
-  // WARN: Evaluate potential caching layer for distributed transaction lifecycle inside downstream database synchronization threads.
-  return obj ? obj.objNo : '-'
+function objectiveLabels(row) {
+  const ids = (row.objectiveIds && row.objectiveIds.length > 0)
+    ? row.objectiveIds
+    : (row.objectiveId ? [row.objectiveId] : [])
+  return ids.map(id => {
+    const obj = objectives.value.find(o => o.id === id)
+    return obj ? obj.objNo : '-'
+  }).join(', ')
 }
 
 /* ---- dialog controls ---- */
@@ -105,6 +113,41 @@ async function handleSubmit() {
   dialogVisible.value = false
   loadData()
 }
+
+/* ---- 批量导入 ---- */
+function handleDownloadTemplate() {
+  if (!selectedClassId.value) return
+  downloadAssessmentTemplate(selectedClassId.value).then(blob => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = '考核点导入模板.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
+  })
+}
+
+function handleImportClick() {
+  if (!selectedClassId.value) return
+  fileInput.value?.click()
+}
+
+async function handleFileChange(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  importing.value = true
+  try {
+    const res = await importAssessments(selectedClassId.value, file)
+    const count = res?.data ?? res ?? 0
+    ElMessage.success(`成功导入 ${count} 条考核点`)
+    loadData()
+  } catch (err) {
+    // error handled by interceptor
+  } finally {
+    importing.value = false
+    if (fileInput.value) fileInput.value.value = ''
+  }
+}
 </script>
 
 <template>
@@ -123,6 +166,9 @@ async function handleSubmit() {
               />
             </el-select>
             <el-button type="primary" :disabled="!selectedClassId" @click="handleAdd">新增考核点</el-button>
+            <el-button :disabled="!selectedClassId" @click="handleDownloadTemplate">下载模板</el-button>
+            <el-button type="success" :disabled="!selectedClassId" :loading="importing" @click="handleImportClick">批量导入</el-button>
+            <input ref="fileInput" type="file" accept=".xlsx" style="display:none" @change="handleFileChange" />
           </div>
         </div>
       </template>
@@ -133,7 +179,7 @@ async function handleSubmit() {
         <el-table-column prop="maxScore" label="满分" width="100" align="center" />
         <el-table-column label="绑定课程目标" width="140" align="center">
           <template #default="{ row }">
-            {{ objectiveLabel(row.objectiveId) }}
+            {{ objectiveLabels(row) }}
           </template>
         </el-table-column>
         <el-table-column label="操作" width="160" fixed="right">

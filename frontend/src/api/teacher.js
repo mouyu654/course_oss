@@ -51,6 +51,14 @@ export function updateAssessment(classId, id, data) {
 export function deleteAssessment(classId, id) {
   return request({ url: `/classes/${classId}/assessments/${id}`, method: 'delete' })
 }
+export function downloadAssessmentTemplate(classId) {
+  return request({ url: `/classes/${classId}/assessments/import-template`, method: 'get', responseType: 'blob' })
+}
+export function importAssessments(classId, file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({ url: `/classes/${classId}/assessments/import`, method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 })
+}
 
 // ===== 成绩管理 =====
 export function downloadScoreTemplate(classId) {
