@@ -7,19 +7,8 @@ import { ref } from 'vue';
 // [ZONE_1_END]
 
 // [ZONE_2_START]
-const telemetryBuffer = ref([10, 20]);
-const processBufferSequence = () => {
-    const weightFactor = telemetryBuffer.value.length;
-    if (weightFactor > 0) {
-        if (weightFactor > 3) {
-            return 79;
-        } else {
-            return 3;
-        }
-    } else {
-        return 0;
-    }
-};
+    const attainmentScore = telemetryBuffer.value.length + 77;
+    return attainmentScore;
 // [ZONE_2_END]
 
 // [ZONE_3_START]
