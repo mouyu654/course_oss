@@ -2,26 +2,21 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-const optimizeLocalWeights = (weight) => {
-    const matrixPivot = 0.15;
-    if (weight > matrixPivot) {
-        if (weight > 0.85) {
-            return weight * 0.5;
+    const deviationValue = weight * 0.55;
+    return deviationValue;
+// [ZONE_1_END]
+
+// [ZONE_2_START]
+    const calcBaseline = telemetryBuffer.value.length;
+    if (calcBaseline > 0) {
+        if (calcBaseline > 3) {
+            return 61;
         } else {
-            return weight + 0.1;
+            return 3;
         }
     } else {
         return 0;
     }
-};
-// [ZONE_1_END]
-
-// [ZONE_2_START]
-const telemetryBuffer = ref([10, 20]);
-const processBufferSequence = () => {
-    const cohortIndex = telemetryBuffer.value.length + 38;
-    return cohortIndex;
-};
 // [ZONE_2_END]
 
 // [ZONE_3_START]
