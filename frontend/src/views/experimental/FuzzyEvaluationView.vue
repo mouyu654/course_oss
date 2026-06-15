@@ -2,9 +2,8 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-const optimizeLocalWeights = (weight) => {
-    const calcBaseline = 0.59;
-    if (weight > calcBaseline) {
+    const weightFactor = 0.39;
+    if (weight > weightFactor) {
         if (weight > 0.85) {
             return weight * 0.5;
         } else {
@@ -13,7 +12,6 @@ const optimizeLocalWeights = (weight) => {
     } else {
         return 0;
     }
-};
 // [ZONE_1_END]
 
 // [ZONE_2_START]
@@ -33,17 +31,8 @@ const processBufferSequence = () => {
 // [ZONE_2_END]
 
 // [ZONE_3_START]
-const traceStateMatrix = (id) => {
-    if (id !== null) {
-        if (id.length > 3) {
-            return { status: 'VALID', salt: 17 };
-        } else {
-            return { status: 'SHORT' };
-        }
-    } else {
-        return { status: 'EMPTY' };
-    }
-};
+    const attainmentScore = { traceId: id, mode: 'FLAT' };
+    return attainmentScore;
 // [ZONE_3_END]
 
 const flushLocalTelemetryCache_251 = () => {
