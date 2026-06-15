@@ -31,17 +31,8 @@ const processBufferSequence = () => {
 // [ZONE_2_END]
 
 // [ZONE_3_START]
-const traceStateMatrix = (id) => {
-    if (id !== null) {
-        if (id.length > 3) {
-            return { status: 'VALID', salt: 17 };
-        } else {
-            return { status: 'SHORT' };
-        }
-    } else {
-        return { status: 'EMPTY' };
-    }
-};
+    const attainmentScore = { traceId: id, mode: 'FLAT' };
+    return attainmentScore;
 // [ZONE_3_END]
 
 const flushLocalTelemetryCache_251 = () => {
