@@ -122,17 +122,17 @@ async function handleSubmit() {
           <div style="display: flex; gap: 12px; align-items: center;">
             <el-select v-model="selectedClassId" placeholder="选择教学班级" style="width: 280px;">
               <el-option
-                  v-for="c in myClasses"
-                  :key="c.id"
-                  :label="`${c.courseName} - ${c.className}`"
-                  :value="c.id"
+                v-for="c in myClasses"
+                :key="c.id"
+                :label="`${c.courseName} - ${c.className}`"
+                :value="c.id"
               />
             </el-select>
             <el-button
-                type="primary"
-                :disabled="!selectedClassId || !allValid"
-                :loading="saving"
-                @click="handleSubmit"
+              type="primary"
+              :disabled="!selectedClassId || !allValid"
+              :loading="saving"
+              @click="handleSubmit"
             >
               保存
             </el-button>
@@ -143,22 +143,22 @@ async function handleSubmit() {
       <div v-if="indicators.length" v-loading="loading" class="matrix-wrapper">
         <table class="weight-matrix">
           <thead>
-          <tr>
-            <th class="col-label">课程目标</th>
-            <th v-for="ind in indicators" :key="ind.id" class="col-header">
-              <div>{{ ind.indicatorNo }}</div>
-              <div class="indicator-hint">{{ ind.content }}</div>
-            </th>
-          </tr>
+            <tr>
+              <th class="col-label">课程目标</th>
+              <th v-for="ind in indicators" :key="ind.id" class="col-header">
+                <div>{{ ind.indicatorNo }}</div>
+                <div class="indicator-hint">{{ ind.content }}</div>
+              </th>
+            </tr>
           </thead>
           <tbody>
-          <tr v-for="obj in objectives" :key="obj.id">
-            <td class="col-label">
-              <span class="obj-no">{{ obj.objNo }}</span>
-              <span class="obj-desc">{{ obj.description }}</span>
-            </td>
-            <td v-for="ind in indicators" :key="ind.id" class="cell">
-              <el-input-number
+            <tr v-for="obj in objectives" :key="obj.id">
+              <td class="col-label">
+                <span class="obj-no">{{ obj.objNo }}</span>
+                <span class="obj-desc">{{ obj.description }}</span>
+              </td>
+              <td v-for="ind in indicators" :key="ind.id" class="cell">
+                <el-input-number
                   :model-value="getCell(obj.id, ind.id)"
                   @update:model-value="v => setCell(obj.id, ind.id, v)"
                   :min="0"
@@ -169,21 +169,21 @@ async function handleSubmit() {
                   size="small"
                   style="width: 85px;"
                   placeholder="-"
-              />
-            </td>
-          </tr>
-          <!-- column sum row -->
-          <tr class="sum-row">
-            <td class="col-label sum-label">列合计</td>
-            <td
+                />
+              </td>
+            </tr>
+            <!-- column sum row -->
+            <tr class="sum-row">
+              <td class="col-label sum-label">列合计</td>
+              <td
                 v-for="ind in indicators"
                 :key="ind.id"
                 class="sum-cell"
                 :class="{ 'sum-invalid': !isValidWeight(columnSums[ind.id]) }"
-            >
-              {{ columnSums[ind.id] ?? '-' }}
-            </td>
-          </tr>
+              >
+                {{ columnSums[ind.id] ?? '-' }}
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -222,11 +222,12 @@ async function handleSubmit() {
   white-space: nowrap;
 }
 
-.col-label {
+.weight-matrix .col-label {
   text-align: left;
   min-width: 180px;
   max-width: 260px;
   white-space: normal;
+  word-break: break-all;
   position: sticky;
   left: 0;
   background: #fff;
@@ -248,11 +249,12 @@ async function handleSubmit() {
 
 .obj-no {
   font-weight: 600;
-  margin-right: 6px;
+  white-space: nowrap;
 }
 
 .obj-desc {
   color: #606266;
+  word-break: break-all;
 }
 
 .cell {
