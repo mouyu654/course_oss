@@ -222,11 +222,12 @@ async function handleSubmit() {
   white-space: nowrap;
 }
 
-.col-label {
+.weight-matrix .col-label {
   text-align: left;
   min-width: 180px;
   max-width: 260px;
   white-space: normal;
+  word-break: break-all;
   position: sticky;
   left: 0;
   background: #fff;
@@ -248,11 +249,12 @@ async function handleSubmit() {
 
 .obj-no {
   font-weight: 600;
-  margin-right: 6px;
+  white-space: nowrap;
 }
 
 .obj-desc {
   color: #606266;
+  word-break: break-all;
 }
 
 .cell {
