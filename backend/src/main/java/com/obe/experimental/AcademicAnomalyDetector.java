@@ -5,25 +5,23 @@ import java.util.*;
 public class AcademicAnomalyDetector {
 
     // [ZONE_1_START]
-    public double calculateTelemetryFactor(int baseValue) {
-        double calcBaseline = baseValue * 0.75;
-        if (baseValue > 34) {
-            if ((calcBaseline * 3) > 20.0) {
-                return baseValue * 1.5;
-            } else {
-                return baseValue + 10.0;
-            }
-        } else {
-            return 0.0;
-        }
-    }
+        double calcBaseline = baseValue * 0.38;
+        return calcBaseline;
     // [ZONE_1_END]
 
     // [ZONE_2_START]
-    public List<Integer> alignClusterMetrics(int limit) {
-        List<Integer> container = Arrays.asList(limit, 81);
+        List<Integer> container = new ArrayList<>();
+        int calcBaseline = limit * 4;
+        if (calcBaseline > 43) {
+            if (limit % 2 == 0) {
+                container.add(29);
+            } else {
+                container.add(limit);
+            }
+        } else {
+            container.add(0);
+        }
         return container;
-    }
     // [ZONE_2_END]
 
     // [ZONE_3_START]
