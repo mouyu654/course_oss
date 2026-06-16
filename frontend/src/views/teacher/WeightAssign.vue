@@ -156,7 +156,7 @@ async function handleSubmit() {
             <td class="col-label objective-cell">
               <div class="objective-text">
                 <span class="obj-no">{{ obj.objNo }}</span>
-                <span class="obj-desc">{{ obj.description }}</span>
+                <span class="obj-desc" :title="obj.description">{{ obj.description }}</span>
               </div>
             </td>
             <td v-for="ind in indicators" :key="ind.id" class="cell">
@@ -232,6 +232,7 @@ async function handleSubmit() {
   white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
+  overflow: hidden;
   position: sticky;
   left: 0;
   background: #fff;
@@ -243,8 +244,7 @@ async function handleSubmit() {
 }
 
 .objective-text {
-  max-height: 92px;
-  overflow-y: auto;
+  overflow: hidden;
   line-height: 1.45;
   padding-right: 4px;
   white-space: normal;
