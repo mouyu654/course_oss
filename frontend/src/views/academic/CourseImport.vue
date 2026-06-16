@@ -1,8 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getCourses, createCourse, updateCourse, deleteCourse } from '@/api/academic'
+import { getCourses, createCourse, updateCourse, deleteCourse, downloadCourseTemplate, batchImportCourses } from '@/api/academic'
 import { getMajors } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Download, Upload } from '@element-plus/icons-vue'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -24,6 +25,10 @@ const rules = {
 }
 
 const majorNameMap = ref({}) // id → name
+
+// 导入相关
+const importDialogVisible = ref(false)
+const importUploading = ref(false)
 
 onMounted(async () => {
   const [majRes] = await Promise.all([getMajors(), loadData()])
@@ -90,6 +95,51 @@ async function handleSubmit() {
     submitting.value = false
   }
 }
+
+// ---- 导入 ----
+function downloadFile(blob, filename) {
+  const url = window.URL.createObjectURL(new Blob([blob]))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  window.URL.revokeObjectURL(url)
+}
+
+async function handleDownloadTemplate() {
+  try {
+    const res = await downloadCourseTemplate()
+    downloadFile(res, '课程信息模板.xlsx')
+    ElMessage.success('模板下载成功')
+  } catch { /* interceptor handles error */ }
+}
+
+function showImportResult(res) {
+  const d = res?.data || res
+  if (d.imported !== undefined) {
+    let msg = `导入完成：成功 ${d.imported} 条，跳过 ${d.skipped ?? 0} 条，共 ${d.total} 条`
+    if (d.majorMatched !== undefined) {
+      msg += `；专业匹配 ${d.majorMatched}，未匹配 ${d.majorNotFound}`
+    }
+    ElMessage.success(msg)
+  } else {
+    ElMessage.success('导入完成')
+  }
+}
+
+async function handleImportCourses(options) {
+  importUploading.value = true
+  try {
+    const res = await batchImportCourses(options.file)
+    showImportResult(res)
+    importDialogVisible.value = false
+    loadData()
+  } finally {
+    importUploading.value = false
+  }
+}
 </script>
 
 <template>
@@ -103,6 +153,7 @@ async function handleSubmit() {
             <el-button type="primary" @click="handleSearch">查询</el-button>
             <el-button @click="handleReset">重置</el-button>
             <el-button type="primary" @click="handleAdd">新增课程</el-button>
+            <el-button type="success" :icon="Upload" @click="importDialogVisible = true">导入课程</el-button>
           </div>
         </div>
       </template>
@@ -154,6 +205,17 @@ async function handleSubmit() {
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" :loading="submitting" @click="handleSubmit">确定</el-button>
       </template>
+    </el-dialog>
+
+    <!-- 导入课程弹窗 -->
+    <el-dialog v-model="importDialogVisible" title="导入课程" width="480px" destroy-on-close>
+      <p style="margin:0 0 16px;color:#909399;font-size:13px">请下载模板，按格式填写课程信息后上传 Excel 文件</p>
+      <div style="display:flex;gap:12px;align-items:center">
+        <el-button :icon="Download" @click="handleDownloadTemplate">下载模板</el-button>
+        <el-upload :show-file-list="false" :http-request="handleImportCourses" accept=".xlsx,.xls">
+          <el-button type="primary" :icon="Upload" :loading="importUploading">选择文件导入</el-button>
+        </el-upload>
+      </div>
     </el-dialog>
   </div>
 </template>

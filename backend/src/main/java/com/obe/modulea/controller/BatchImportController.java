@@ -63,16 +63,14 @@ public class BatchImportController {
         response.setHeader("Content-Disposition", "attachment;filename=courses_template.xlsx");
         Workbook wb = new XSSFWorkbook();
         Sheet sheet = wb.createSheet("课程信息");
-        String[] headers = {"课程代码", "课程名称", "学分", "理论学时", "实验学时", "所属专业名称"};
+        String[] headers = {"课程代码", "课程名称", "学分", "所属专业名称"};
         Row row = sheet.createRow(0);
         for (int i = 0; i < headers.length; i++) row.createCell(i).setCellValue(headers[i]);
         Row ex = sheet.createRow(1);
         ex.createCell(0).setCellValue("CS1001");
         ex.createCell(1).setCellValue("数据结构");
         ex.createCell(2).setCellValue(3.0);
-        ex.createCell(3).setCellValue(48);
-        ex.createCell(4).setCellValue(16);
-        ex.createCell(5).setCellValue("计算机科学与技术");
+        ex.createCell(3).setCellValue("计算机科学与技术");
         wb.write(response.getOutputStream());
         wb.close();
     }
@@ -118,7 +116,8 @@ public class BatchImportController {
     @Transactional
     public Result<Map<String, Object>> importCourses(@RequestParam("file") MultipartFile file) throws IOException {
         List<Map<String, Object>> rows = parseCourseFile(file);
-        int imported = 0, skipped = 0;
+        Map<String, Long> majorMap = buildMajorNameMap();
+        int imported = 0, skipped = 0, majorMatched = 0, majorNotFound = 0;
         for (Map<String, Object> r : rows) {
             String code = (String) r.get("code");
             Long count = courseMapper.selectCount(
@@ -129,9 +128,27 @@ public class BatchImportController {
             c.setName((String) r.get("name"));
             c.setCredit((BigDecimal) r.get("credit"));
             courseMapper.insert(c);
+
+            // 关联专业
+            String majorName = (String) r.get("majorName");
+            if (majorName != null) {
+                Long majorId = majorMap.get(majorName);
+                if (majorId != null) {
+                    CourseMajor cm = new CourseMajor();
+                    cm.setCourseId(c.getId());
+                    cm.setMajorId(majorId);
+                    courseMajorMapper.insert(cm);
+                    majorMatched++;
+                } else {
+                    majorNotFound++;
+                }
+            }
             imported++;
         }
-        return Result.ok(Map.of("imported", imported, "skipped", skipped, "total", rows.size()));
+        return Result.ok(Map.of(
+            "imported", imported, "skipped", skipped, "total", rows.size(),
+            "majorMatched", majorMatched, "majorNotFound", majorNotFound
+        ));
     }
 
     @PostMapping("/admin-classes/{classId}/students")
@@ -219,6 +236,8 @@ public class BatchImportController {
                 r.put("name", getCellStr(row, 1));
                 String creditStr = getCellStr(row, 2);
                 if (!creditStr.isBlank()) r.put("credit", new BigDecimal(creditStr));
+                String majorName = getCellStr(row, 3);
+                if (!majorName.isBlank()) r.put("majorName", majorName);
                 list.add(r);
             }
         }
