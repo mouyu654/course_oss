@@ -212,6 +212,7 @@ async function handleSubmit() {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  table-layout: fixed;
 }
 
 .weight-matrix th,
@@ -225,9 +226,11 @@ async function handleSubmit() {
 .weight-matrix .col-label {
   text-align: left;
   min-width: 180px;
+  width: 260px;
   max-width: 260px;
   white-space: normal;
-  word-break: break-all;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   position: sticky;
   left: 0;
   background: #fff;
@@ -254,7 +257,8 @@ async function handleSubmit() {
 
 .obj-desc {
   color: #606266;
-  word-break: break-all;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .cell {
