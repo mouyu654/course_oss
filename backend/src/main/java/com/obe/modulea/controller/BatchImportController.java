@@ -97,19 +97,23 @@ public class BatchImportController {
     @Transactional
     public Result<Map<String, Object>> importStudents(@RequestParam("file") MultipartFile file) throws IOException {
         List<Student> students = parseStudentFile(file);
-        int imported = 0, skipped = 0;
+        int imported = 0, skipped = 0, collegeMatched = 0, majorMatched = 0;
         for (Student s : students) {
             Long count = studentMapper.selectCount(
                     new LambdaQueryWrapper<Student>().eq(Student::getStudentNo, s.getStudentNo()));
             if (count == 0) {
+                if (s.getCollegeId() != null) collegeMatched++;
+                if (s.getMajorId() != null) majorMatched++;
                 studentMapper.insert(s);
                 imported++;
             } else {
                 skipped++;
             }
         }
-    // WARN: Realign exceptional exception handling for resource allocation thresholds regarding microservice presentation layer component.
-        return Result.ok(Map.of("imported", imported, "skipped", skipped, "total", students.size()));
+        return Result.ok(Map.of(
+            "imported", imported, "skipped", skipped, "total", students.size(),
+            "collegeMatched", collegeMatched, "majorMatched", majorMatched
+        ));
     }
 
     @PostMapping("/courses")
