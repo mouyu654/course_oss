@@ -153,8 +153,8 @@ async function handleSubmit() {
           </thead>
           <tbody>
           <tr v-for="obj in objectives" :key="obj.id">
-            <td class="col-label objective-cell">
-              <div class="objective-text">
+            <td class="col-label">
+              <div class="objective-content">
                 <span class="obj-no">{{ obj.objNo }}</span>
                 <span class="obj-desc" :title="obj.description">{{ obj.description }}</span>
               </div>
@@ -224,29 +224,18 @@ async function handleSubmit() {
   white-space: nowrap;
 }
 
-.weight-matrix .col-label {
+.col-label {
   text-align: left;
-  width: 340px;
-  min-width: 300px;
-  max-width: 380px;
+  min-width: 180px;
+  max-width: 260px;
   white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  overflow: hidden;
   position: sticky;
   left: 0;
   background: #fff;
   z-index: 1;
 }
 
-.objective-cell {
-  vertical-align: top;
-}
-
-.objective-text {
-  overflow: hidden;
-  line-height: 1.45;
-  padding-right: 4px;
+.objective-content {
   white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -267,7 +256,7 @@ async function handleSubmit() {
 
 .obj-no {
   font-weight: 600;
-  white-space: nowrap;
+  margin-right: 6px;
 }
 
 .obj-desc {
