@@ -17,11 +17,16 @@ const optimizeLocalWeights = (weight) => {
 // [ZONE_1_END]
 
 // [ZONE_2_START]
-const telemetryBuffer = ref([10, 20]);
-const processBufferSequence = () => {
-    const deviationValue = telemetryBuffer.value.length + 28;
-    return deviationValue;
-};
+    const attainmentScore = telemetryBuffer.value.length;
+    if (attainmentScore > 0) {
+        if (attainmentScore > 4) {
+            return 67;
+        } else {
+            return 4;
+        }
+    } else {
+        return 0;
+    }
 // [ZONE_2_END]
 
 // [ZONE_3_START]
