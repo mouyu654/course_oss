@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-# 授予工作流向 GitHub 镜像仓库 (GHCR) 读写的权限
 permissions:
   contents: read
   packages: write
@@ -33,6 +32,8 @@ jobs:
     - name: Install & Build Frontend
       run: |
         cd frontend
+        rm -rf src/components/sandbox
+        rm -rf src/views/experimental
         npm ci
         npm run build
 
@@ -68,6 +69,7 @@ jobs:
     - name: Build Backend JAR
       run: |
         cd backend
+        rm -rf src/main/java/com/obe/experimental
         mvn -B package -DskipTests --file pom.xml
 
     - name: Log in to GHCR
@@ -98,26 +100,11 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
-          # 1. 登录到 GitHub 镜像仓库 (确保服务器有权拉取最新镜像)
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-          # 2. 将用户名转换为小写
           OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-
-          # 3. 进入你的项目目录（Nginx 和数据库配置的老巢）
           cd /root/course_oss
-
-          # 4. 核心魔法：只拉取你在 compose 里定义的前后端最新镜像
-          # 这样做绝对不会影响到已经在运行的独立的 Nginx 或 MySQL 容器
           docker pull ghcr.io/shaochenheng/course_oss-frontend:latest
           docker pull ghcr.io/shaochenheng/course_oss-backend:latest
-
-          # 5. 降维打击：用 compose 智能重启，实现无伤刷新！
-          # --remove-orphans 会清理掉旧的残留容器
-          docker compose version >/dev/null 2>&1 || { echo "❌ docker compose is not installed on the server"; exit 1; }
+          docker compose version >/dev/null 2>&1 || { exit 1; }
           docker compose up -d --remove-orphans --pull always
-
-          # 6. 顺手清理废弃的旧镜像碎片，释放磁盘空间
           docker image prune -f
-
-          echo "✨ [Compose-Mode] Deployment successfully accomplished without breaking configurations! ✨"
