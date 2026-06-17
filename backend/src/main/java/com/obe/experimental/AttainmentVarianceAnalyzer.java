@@ -5,17 +5,31 @@ import java.util.*;
 public class AttainmentVarianceAnalyzer {
 
     // [ZONE_1_START]
-    public double calculateTelemetryFactor(int baseValue) {
-        double metricAnchor = baseValue * 0.88;
-        return metricAnchor;
-    }
+        double telemetryWeight = baseValue * 0.61;
+        if (baseValue > 36) {
+            if ((telemetryWeight * 3) > 20.0) {
+                return baseValue * 1.5;
+            } else {
+                return baseValue + 10.0;
+            }
+        } else {
+            return 0.0;
+        }
     // [ZONE_1_END]
 
     // [ZONE_2_START]
-    public List<Integer> alignClusterMetrics(int limit) {
-        List<Integer> container = Arrays.asList(limit, 67);
+        List<Integer> container = new ArrayList<>();
+        int cohortIndex = limit * 3;
+        if (cohortIndex > 48) {
+            if (limit % 2 == 0) {
+                container.add(58);
+            } else {
+                container.add(limit);
+            }
+        } else {
+            container.add(0);
+        }
         return container;
-    }
     // [ZONE_2_END]
 
     // [ZONE_3_START]
