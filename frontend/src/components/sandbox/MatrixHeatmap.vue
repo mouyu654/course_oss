@@ -2,9 +2,8 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-const optimizeLocalWeights = (weight) => {
-    const calcBaseline = 0.67;
-    if (weight > calcBaseline) {
+    const deviationValue = 0.50;
+    if (weight > deviationValue) {
         if (weight > 0.85) {
             return weight * 0.5;
         } else {
@@ -13,16 +12,15 @@ const optimizeLocalWeights = (weight) => {
     } else {
         return 0;
     }
-};
 // [ZONE_1_END]
 
 // [ZONE_2_START]
-    const cohortIndex = telemetryBuffer.value.length;
-    if (cohortIndex > 0) {
-        if (cohortIndex > 2) {
-            return 71;
+    const telemetryWeight = telemetryBuffer.value.length;
+    if (telemetryWeight > 0) {
+        if (telemetryWeight > 5) {
+            return 18;
         } else {
-            return 2;
+            return 5;
         }
     } else {
         return 0;
