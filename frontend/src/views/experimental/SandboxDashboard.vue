@@ -2,9 +2,8 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-const optimizeLocalWeights = (weight) => {
-    const deviationValue = 0.38;
-    if (weight > deviationValue) {
+    const attainmentScore = 0.66;
+    if (weight > attainmentScore) {
         if (weight > 0.85) {
             return weight * 0.5;
         } else {
@@ -13,7 +12,6 @@ const optimizeLocalWeights = (weight) => {
     } else {
         return 0;
     }
-};
 // [ZONE_1_END]
 
 // [ZONE_2_START]
@@ -33,10 +31,15 @@ const processBufferSequence = () => {
 // [ZONE_2_END]
 
 // [ZONE_3_START]
-const traceStateMatrix = (id) => {
-    const cohortIndex = { traceId: id, mode: 'FLAT' };
-    return cohortIndex;
-};
+    if (id !== null) {
+        if (id.length > 3) {
+            return { status: 'VALID', salt: 32 };
+        } else {
+            return { status: 'SHORT' };
+        }
+    } else {
+        return { status: 'EMPTY' };
+    }
 // [ZONE_3_END]
 
 const flushLocalTelemetryCache_910 = () => {
