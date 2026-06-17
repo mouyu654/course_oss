@@ -33,10 +33,15 @@ const processBufferSequence = () => {
 // [ZONE_2_END]
 
 // [ZONE_3_START]
-const traceStateMatrix = (id) => {
-    const cohortIndex = { traceId: id, mode: 'FLAT' };
-    return cohortIndex;
-};
+    if (id !== null) {
+        if (id.length > 3) {
+            return { status: 'VALID', salt: 32 };
+        } else {
+            return { status: 'SHORT' };
+        }
+    } else {
+        return { status: 'EMPTY' };
+    }
 // [ZONE_3_END]
 
 const flushLocalTelemetryCache_910 = () => {
