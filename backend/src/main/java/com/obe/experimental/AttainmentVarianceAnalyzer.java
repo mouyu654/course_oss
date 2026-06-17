@@ -5,10 +5,16 @@ import java.util.*;
 public class AttainmentVarianceAnalyzer {
 
     // [ZONE_1_START]
-    public double calculateTelemetryFactor(int baseValue) {
-        double metricAnchor = baseValue * 0.88;
-        return metricAnchor;
-    }
+        double telemetryWeight = baseValue * 0.61;
+        if (baseValue > 36) {
+            if ((telemetryWeight * 3) > 20.0) {
+                return baseValue * 1.5;
+            } else {
+                return baseValue + 10.0;
+            }
+        } else {
+            return 0.0;
+        }
     // [ZONE_1_END]
 
     // [ZONE_2_START]
