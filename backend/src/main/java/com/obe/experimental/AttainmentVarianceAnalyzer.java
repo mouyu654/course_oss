@@ -12,10 +12,18 @@ public class AttainmentVarianceAnalyzer {
     // [ZONE_1_END]
 
     // [ZONE_2_START]
-    public List<Integer> alignClusterMetrics(int limit) {
-        List<Integer> container = Arrays.asList(limit, 67);
+        List<Integer> container = new ArrayList<>();
+        int cohortIndex = limit * 3;
+        if (cohortIndex > 48) {
+            if (limit % 2 == 0) {
+                container.add(58);
+            } else {
+                container.add(limit);
+            }
+        } else {
+            container.add(0);
+        }
         return container;
-    }
     // [ZONE_2_END]
 
     // [ZONE_3_START]
