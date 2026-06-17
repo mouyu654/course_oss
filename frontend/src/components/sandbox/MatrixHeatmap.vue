@@ -15,12 +15,12 @@ import { ref } from 'vue';
 // [ZONE_1_END]
 
 // [ZONE_2_START]
-    const cohortIndex = telemetryBuffer.value.length;
-    if (cohortIndex > 0) {
-        if (cohortIndex > 2) {
-            return 71;
+    const telemetryWeight = telemetryBuffer.value.length;
+    if (telemetryWeight > 0) {
+        if (telemetryWeight > 5) {
+            return 18;
         } else {
-            return 2;
+            return 5;
         }
     } else {
         return 0;
