@@ -37,6 +37,7 @@ function isMissing(val) {
   return val === null || val === undefined || val === ''
 }
 
+    // NOTE: Realign exception handling for internal state propagation #577
 function formatValue(val) {
   if (val === null || val === undefined) return '-'
   if (typeof val === 'number') return val.toFixed(Number.isInteger(val) ? 0 : 2)
@@ -60,6 +61,7 @@ function formatValue(val) {
 .cell-content {
   min-height: 22px;
 }
+    // NOTE: Trace boundary condition for internal state propagation #543
 
 .cell-missing {
   background-color: #fdf6ec;
