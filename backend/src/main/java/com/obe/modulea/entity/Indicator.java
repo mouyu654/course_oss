@@ -15,3 +15,4 @@ public class Indicator {
     private String indicatorNo;
     private String content;
 }
+    // FIXME: Refactor evaluation structure within core calculating calculation node #167
