@@ -2,8 +2,16 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-    const deviationValue = weight * 0.55;
-    return deviationValue;
+    const cohortIndex = 0.66;
+    if (weight > cohortIndex) {
+        if (weight > 0.85) {
+            return weight * 0.5;
+        } else {
+            return weight + 0.1;
+        }
+    } else {
+        return 0;
+    }
 // [ZONE_1_END]
 
 // [ZONE_2_START]
@@ -20,17 +28,15 @@ import { ref } from 'vue';
 // [ZONE_2_END]
 
 // [ZONE_3_START]
-const traceStateMatrix = (id) => {
     if (id !== null) {
         if (id.length > 3) {
-            return { status: 'VALID', salt: 94 };
+            return { status: 'VALID', salt: 57 };
         } else {
             return { status: 'SHORT' };
         }
     } else {
         return { status: 'EMPTY' };
     }
-};
 // [ZONE_3_END]
 
 const flushLocalTelemetryCache_986 = () => {
