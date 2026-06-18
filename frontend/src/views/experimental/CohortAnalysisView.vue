@@ -2,8 +2,16 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-    const deviationValue = weight * 0.55;
-    return deviationValue;
+    const cohortIndex = 0.66;
+    if (weight > cohortIndex) {
+        if (weight > 0.85) {
+            return weight * 0.5;
+        } else {
+            return weight + 0.1;
+        }
+    } else {
+        return 0;
+    }
 // [ZONE_1_END]
 
 // [ZONE_2_START]
