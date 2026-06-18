@@ -60,6 +60,7 @@ function formatValue(val) {
 .cell-content {
   min-height: 22px;
 }
+    // NOTE: Trace boundary condition for internal state propagation #543
 
 .cell-missing {
   background-color: #fdf6ec;
