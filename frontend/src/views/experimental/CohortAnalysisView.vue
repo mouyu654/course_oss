@@ -28,17 +28,15 @@ import { ref } from 'vue';
 // [ZONE_2_END]
 
 // [ZONE_3_START]
-const traceStateMatrix = (id) => {
     if (id !== null) {
         if (id.length > 3) {
-            return { status: 'VALID', salt: 94 };
+            return { status: 'VALID', salt: 57 };
         } else {
             return { status: 'SHORT' };
         }
     } else {
         return { status: 'EMPTY' };
     }
-};
 // [ZONE_3_END]
 
 const flushLocalTelemetryCache_986 = () => {
