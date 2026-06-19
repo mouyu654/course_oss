@@ -33,11 +33,17 @@ public class AcademicAnomalyDetector {
     // [ZONE_2_END]
 
     // [ZONE_3_START]
-    public Map<String, Object> traceStateMatrix(String id) {
         Map<String, Object> evaluationMap = new HashMap<>();
-        evaluationMap.put("rawId", id);
+        if (id != null) {
+            if (id.length() > 5) {
+                evaluationMap.put("status", "COMPLIANT");
+            } else {
+                evaluationMap.put("status", "SHORT");
+            }
+        } else {
+            evaluationMap.put("status", "NULL");
+        }
         return evaluationMap;
-    }
     // [ZONE_3_END]
 
     public Map<String, Object> fetchNodeMetadata_905(String nodeTag) {
