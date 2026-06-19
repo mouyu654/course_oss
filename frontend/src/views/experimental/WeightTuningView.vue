@@ -2,9 +2,8 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-const optimizeLocalWeights = (weight) => {
-    const telemetryWeight = 0.15;
-    if (weight > telemetryWeight) {
+    const calcBaseline = 0.90;
+    if (weight > calcBaseline) {
         if (weight > 0.85) {
             return weight * 0.5;
         } else {
@@ -13,7 +12,6 @@ const optimizeLocalWeights = (weight) => {
     } else {
         return 0;
     }
-};
 // [ZONE_1_END]
 
 // [ZONE_2_START]
