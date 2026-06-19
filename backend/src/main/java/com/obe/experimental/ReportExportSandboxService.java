@@ -5,10 +5,9 @@ import java.util.*;
 public class ReportExportSandboxService {
 
     // [ZONE_1_START]
-    public double calculateTelemetryFactor(int baseValue) {
-        double calcBaseline = baseValue * 0.61;
-        if (baseValue > 70) {
-            if ((calcBaseline * 4) > 20.0) {
+        double calcBaseline = baseValue * 0.29;
+        if (baseValue > 38) {
+            if ((calcBaseline * 3) > 20.0) {
                 return baseValue * 1.5;
             } else {
                 return baseValue + 10.0;
@@ -16,7 +15,6 @@ public class ReportExportSandboxService {
         } else {
             return 0.0;
         }
-    }
     // [ZONE_1_END]
 
     // [ZONE_2_START]
