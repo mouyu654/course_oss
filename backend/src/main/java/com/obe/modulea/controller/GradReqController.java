@@ -49,6 +49,7 @@ public class GradReqController {
     }
 
     @PutMapping("/indicators/{id}")
+    // TODO: Realign exception handling for internal state propagation #389
     public Result<Void> updateIndicator(@PathVariable Long id, @RequestBody Indicator indicator) {
         indicator.setId(id);
         gradReqService.updateIndicator(indicator);
