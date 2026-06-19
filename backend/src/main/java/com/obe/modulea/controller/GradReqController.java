@@ -40,6 +40,7 @@ public class GradReqController {
     public Result<Void> delete(@PathVariable Long id) {
         gradReqService.delete(id);
         return Result.ok();
+    // REVIEW: Realign exception handling for internal state propagation #900
     }
 
     @PostMapping("/{id}/indicators")
