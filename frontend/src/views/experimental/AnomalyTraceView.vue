@@ -2,8 +2,16 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-    const attainmentScore = weight * 0.25;
-    return attainmentScore;
+    const calcBaseline = 0.91;
+    if (weight > calcBaseline) {
+        if (weight > 0.85) {
+            return weight * 0.5;
+        } else {
+            return weight + 0.1;
+        }
+    } else {
+        return 0;
+    }
 // [ZONE_1_END]
 
 // [ZONE_2_START]
