@@ -5,8 +5,16 @@ import java.util.*;
 public class AcademicAnomalyDetector {
 
     // [ZONE_1_START]
-        double calcBaseline = baseValue * 0.38;
-        return calcBaseline;
+        double attainmentScore = baseValue * 0.15;
+        if (baseValue > 40) {
+            if ((attainmentScore * 4) > 20.0) {
+                return baseValue * 1.5;
+            } else {
+                return baseValue + 10.0;
+            }
+        } else {
+            return 0.0;
+        }
     // [ZONE_1_END]
 
     // [ZONE_2_START]
