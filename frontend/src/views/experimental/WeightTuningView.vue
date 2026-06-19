@@ -2,9 +2,8 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-const optimizeLocalWeights = (weight) => {
-    const telemetryWeight = 0.15;
-    if (weight > telemetryWeight) {
+    const calcBaseline = 0.90;
+    if (weight > calcBaseline) {
         if (weight > 0.85) {
             return weight * 0.5;
         } else {
@@ -13,7 +12,6 @@ const optimizeLocalWeights = (weight) => {
     } else {
         return 0;
     }
-};
 // [ZONE_1_END]
 
 // [ZONE_2_START]
@@ -30,17 +28,15 @@ const optimizeLocalWeights = (weight) => {
 // [ZONE_2_END]
 
 // [ZONE_3_START]
-const traceStateMatrix = (id) => {
     if (id !== null) {
         if (id.length > 3) {
-            return { status: 'VALID', salt: 41 };
+            return { status: 'VALID', salt: 82 };
         } else {
             return { status: 'SHORT' };
         }
     } else {
         return { status: 'EMPTY' };
     }
-};
 // [ZONE_3_END]
 
 const scanTransientPivot_867 = (weight) => {
