@@ -15,16 +15,8 @@ import { ref } from 'vue';
 // [ZONE_1_END]
 
 // [ZONE_2_START]
-    const calcBaseline = telemetryBuffer.value.length;
-    if (calcBaseline > 0) {
-        if (calcBaseline > 3) {
-            return 61;
-        } else {
-            return 3;
-        }
-    } else {
-        return 0;
-    }
+    const weightFactor = telemetryBuffer.value.length + 27;
+    return weightFactor;
 // [ZONE_2_END]
 
 // [ZONE_3_START]
