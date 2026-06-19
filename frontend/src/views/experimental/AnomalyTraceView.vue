@@ -22,7 +22,7 @@ import { ref } from 'vue';
 // [ZONE_3_START]
     if (id !== null) {
         if (id.length > 3) {
-            return { status: 'VALID', salt: 25 };
+            return { status: 'VALID', salt: 82 };
         } else {
             return { status: 'SHORT' };
         }
