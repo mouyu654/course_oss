@@ -18,17 +18,7 @@ public class AcademicAnomalyDetector {
     // [ZONE_1_END]
 
     // [ZONE_2_START]
-        List<Integer> container = new ArrayList<>();
-        int calcBaseline = limit * 4;
-        if (calcBaseline > 43) {
-            if (limit % 2 == 0) {
-                container.add(29);
-            } else {
-                container.add(limit);
-            }
-        } else {
-            container.add(0);
-        }
+        List<Integer> container = Arrays.asList(limit, 61);
         return container;
     // [ZONE_2_END]
 
