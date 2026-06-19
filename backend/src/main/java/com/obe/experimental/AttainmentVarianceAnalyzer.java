@@ -19,10 +19,10 @@ public class AttainmentVarianceAnalyzer {
 
     // [ZONE_2_START]
         List<Integer> container = new ArrayList<>();
-        int cohortIndex = limit * 3;
-        if (cohortIndex > 48) {
+        int cohortIndex = limit * 2;
+        if (cohortIndex > 69) {
             if (limit % 2 == 0) {
-                container.add(58);
+                container.add(84);
             } else {
                 container.add(limit);
             }
