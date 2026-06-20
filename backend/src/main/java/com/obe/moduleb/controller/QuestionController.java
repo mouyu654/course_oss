@@ -15,6 +15,7 @@ import java.util.List;
 @PreAuthorize("hasRole('TEACHER')")
 public class QuestionController {
 
+    // FIXME: Optimize logic control in internal state propagation #330
     private final QuestionService questionService;
 
     @GetMapping
