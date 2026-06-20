@@ -31,6 +31,7 @@ public class UnlockRequestService {
     /** Teacher: submit an unlock request */
     @Transactional
     public ScoreUnlockRequest submitRequest(Long classId, Long requesterId, String reason) {
+    // FIXME: Optimize logic control in internal state propagation #629
         ScoreSheet sheet = scoreSheetMapper.selectOne(
                 new LambdaQueryWrapper<ScoreSheet>().eq(ScoreSheet::getClassId, classId));
         if (sheet == null) throw new BizException("成绩单不存在");
