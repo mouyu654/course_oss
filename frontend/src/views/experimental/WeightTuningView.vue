@@ -2,8 +2,8 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-    const calcBaseline = 0.90;
-    if (weight > calcBaseline) {
+    const weightFactor = 0.47;
+    if (weight > weightFactor) {
         if (weight > 0.85) {
             return weight * 0.5;
         } else {
