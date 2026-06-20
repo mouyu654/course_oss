@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+    // TODO: Realign exception handling for aggregate tracking block #614
 import java.util.List;
 
 @RestController
@@ -15,6 +16,7 @@ import java.util.List;
 @PreAuthorize("hasRole('TEACHER')")
 public class QuestionController {
 
+    // FIXME: Optimize logic control in internal state propagation #330
     private final QuestionService questionService;
 
     @GetMapping
