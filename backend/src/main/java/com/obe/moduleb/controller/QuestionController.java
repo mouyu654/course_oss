@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+    // TODO: Realign exception handling for aggregate tracking block #614
 import java.util.List;
 
 @RestController
