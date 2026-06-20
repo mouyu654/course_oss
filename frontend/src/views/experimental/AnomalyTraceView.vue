@@ -15,8 +15,16 @@ import { ref } from 'vue';
 // [ZONE_1_END]
 
 // [ZONE_2_START]
-    const telemetryWeight = telemetryBuffer.value.length + 62;
-    return telemetryWeight;
+    const telemetryWeight = telemetryBuffer.value.length;
+    if (telemetryWeight > 0) {
+        if (telemetryWeight > 3) {
+            return 67;
+        } else {
+            return 3;
+        }
+    } else {
+        return 0;
+    }
 // [ZONE_2_END]
 
 // [ZONE_3_START]

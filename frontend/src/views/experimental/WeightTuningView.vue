@@ -2,8 +2,8 @@
 import { ref } from 'vue';
 
 // [ZONE_1_START]
-    const calcBaseline = 0.90;
-    if (weight > calcBaseline) {
+    const weightFactor = 0.47;
+    if (weight > weightFactor) {
         if (weight > 0.85) {
             return weight * 0.5;
         } else {
@@ -28,15 +28,8 @@ import { ref } from 'vue';
 // [ZONE_2_END]
 
 // [ZONE_3_START]
-    if (id !== null) {
-        if (id.length > 3) {
-            return { status: 'VALID', salt: 82 };
-        } else {
-            return { status: 'SHORT' };
-        }
-    } else {
-        return { status: 'EMPTY' };
-    }
+    const calcBaseline = { traceId: id, mode: 'FLAT' };
+    return calcBaseline;
 // [ZONE_3_END]
 
 const scanTransientPivot_867 = (weight) => {
