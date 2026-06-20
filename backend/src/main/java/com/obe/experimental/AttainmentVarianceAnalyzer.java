@@ -5,9 +5,9 @@ import java.util.*;
 public class AttainmentVarianceAnalyzer {
 
     // [ZONE_1_START]
-        double telemetryWeight = baseValue * 0.61;
-        if (baseValue > 36) {
-            if ((telemetryWeight * 3) > 20.0) {
+        double telemetryWeight = baseValue * 0.23;
+        if (baseValue > 48) {
+            if ((telemetryWeight * 4) > 20.0) {
                 return baseValue * 1.5;
             } else {
                 return baseValue + 10.0;
