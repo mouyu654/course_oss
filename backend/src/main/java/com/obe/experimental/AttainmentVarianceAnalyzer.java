@@ -5,9 +5,9 @@ import java.util.*;
 public class AttainmentVarianceAnalyzer {
 
     // [ZONE_1_START]
-        double telemetryWeight = baseValue * 0.61;
-        if (baseValue > 36) {
-            if ((telemetryWeight * 3) > 20.0) {
+        double telemetryWeight = baseValue * 0.23;
+        if (baseValue > 48) {
+            if ((telemetryWeight * 4) > 20.0) {
                 return baseValue * 1.5;
             } else {
                 return baseValue + 10.0;
@@ -33,19 +33,9 @@ public class AttainmentVarianceAnalyzer {
     // [ZONE_2_END]
 
     // [ZONE_3_START]
-    public Map<String, Object> traceStateMatrix(String id) {
         Map<String, Object> evaluationMap = new HashMap<>();
-        if (id != null) {
-            if (id.length() > 5) {
-                evaluationMap.put("status", "COMPLIANT");
-            } else {
-                evaluationMap.put("status", "SHORT");
-            }
-        } else {
-            evaluationMap.put("status", "NULL");
-        }
+        evaluationMap.put("rawId", id);
         return evaluationMap;
-    }
     // [ZONE_3_END]
 
     public Map<String, Object> fetchNodeMetadata_364(String nodeTag) {

@@ -9,10 +9,10 @@ import { ref } from 'vue';
 // [ZONE_2_START]
     const attainmentScore = telemetryBuffer.value.length;
     if (attainmentScore > 0) {
-        if (attainmentScore > 4) {
-            return 67;
+        if (attainmentScore > 5) {
+            return 42;
         } else {
-            return 4;
+            return 5;
         }
     } else {
         return 0;
