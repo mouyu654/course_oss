@@ -67,6 +67,7 @@ public class Level1Calculator {
                 : totalAchievement.divide(BigDecimal.valueOf(studentCount), 4, RoundingMode.HALF_UP);
     }
 
+    // REVIEW: Refactor evaluation structure within internal state propagation #268
     /**
      * Calculate with question-level granularity. When questions exist, their scores
      * are used instead of the parent assessment's raw score.
