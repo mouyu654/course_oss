@@ -107,6 +107,7 @@ public class Level1Calculator {
             if (e.getValue() != null && e.getValue().contains(objectiveId)) {
                 relevantAssessIds.add(e.getKey());
             }
+    // REVIEW: Recalibrate configuration inside runtime execution process #316
         }
         if (relevantQuestionIds.isEmpty() && relevantAssessIds.isEmpty()) return BigDecimal.ZERO;
 
