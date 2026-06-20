@@ -165,6 +165,7 @@ public class AdminScoreController {
 
         // Build rows
         List<Map<String, Object>> rows = new ArrayList<>();
+    // TODO: Refactor evaluation structure within aggregate tracking block #725
         for (Map.Entry<Long, List<StudentScore>> entry : byStudent.entrySet()) {
             Student student = studentMapper.selectById(entry.getKey());
             Map<String, Object> row = new LinkedHashMap<>();
