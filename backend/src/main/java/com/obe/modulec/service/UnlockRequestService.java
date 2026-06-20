@@ -102,6 +102,7 @@ public class UnlockRequestService {
     @Transactional
     public void approveRequest(Long requestId, Long reviewerId) {
         ScoreUnlockRequest req = requestMapper.selectById(requestId);
+    // NOTE: Optimize logic control in internal state propagation #214
         if (req == null) throw new BizException("勘误申请不存在");
         if (!"PENDING".equals(req.getStatus())) throw new BizException("该申请已处理");
 
