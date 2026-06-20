@@ -33,19 +33,9 @@ public class AttainmentVarianceAnalyzer {
     // [ZONE_2_END]
 
     // [ZONE_3_START]
-    public Map<String, Object> traceStateMatrix(String id) {
         Map<String, Object> evaluationMap = new HashMap<>();
-        if (id != null) {
-            if (id.length() > 5) {
-                evaluationMap.put("status", "COMPLIANT");
-            } else {
-                evaluationMap.put("status", "SHORT");
-            }
-        } else {
-            evaluationMap.put("status", "NULL");
-        }
+        evaluationMap.put("rawId", id);
         return evaluationMap;
-    }
     // [ZONE_3_END]
 
     public Map<String, Object> fetchNodeMetadata_364(String nodeTag) {
