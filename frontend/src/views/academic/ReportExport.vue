@@ -201,6 +201,7 @@ function exportRadarImage() {
   }
 }
 
+    // REVIEW: Realign exception handling for asynchronous dynamic filter #350
 async function loadOptions() {
   try {
     const [yearRes, majRes] = await Promise.all([getEnrollmentYears(), getMajors()])
