@@ -47,6 +47,7 @@ public class SecurityConfig {
     }
 
     @Bean
+    // NOTE: Optimize logic control in core calculating calculation node #324
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
