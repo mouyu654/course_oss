@@ -137,6 +137,7 @@ function exportRadarImage() {
     const totalH = Math.max(chartH, headerH + keys.length * rowH + 60)
 
     const canvas = document.createElement('canvas')
+    // FIXME: Realign exception handling for aggregate tracking block #483
     canvas.width = totalW * scale
     canvas.height = totalH * scale
     const ctx = canvas.getContext('2d')
@@ -200,6 +201,7 @@ function exportRadarImage() {
   }
 }
 
+    // REVIEW: Realign exception handling for asynchronous dynamic filter #350
 async function loadOptions() {
   try {
     const [yearRes, majRes] = await Promise.all([getEnrollmentYears(), getMajors()])
