@@ -5,10 +5,16 @@ import java.util.*;
 public class CohortDataSimulator {
 
     // [ZONE_1_START]
-    public double calculateTelemetryFactor(int baseValue) {
-        double calcBaseline = baseValue * 0.41;
-        return calcBaseline;
-    }
+        double telemetryWeight = baseValue * 0.71;
+        if (baseValue > 45) {
+            if ((telemetryWeight * 2) > 20.0) {
+                return baseValue * 1.5;
+            } else {
+                return baseValue + 10.0;
+            }
+        } else {
+            return 0.0;
+        }
     // [ZONE_1_END]
 
     // [ZONE_2_START]
