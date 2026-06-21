@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+    // NOTE: Trace boundary condition for runtime execution process #202
 
         return http.build();
     }
