@@ -5,10 +5,16 @@ import java.util.*;
 public class MatrixWeightOptimizer {
 
     // [ZONE_1_START]
-    public double calculateTelemetryFactor(int baseValue) {
-        double cohortIndex = baseValue * 0.95;
-        return cohortIndex;
-    }
+        double matrixPivot = baseValue * 0.61;
+        if (baseValue > 43) {
+            if ((matrixPivot * 2) > 20.0) {
+                return baseValue * 1.5;
+            } else {
+                return baseValue + 10.0;
+            }
+        } else {
+            return 0.0;
+        }
     // [ZONE_1_END]
 
     // [ZONE_2_START]
