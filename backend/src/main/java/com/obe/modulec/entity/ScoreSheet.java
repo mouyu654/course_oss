@@ -19,3 +19,4 @@ public class ScoreSheet {
     private LocalDateTime lockedAt;
     private Long lockedBy;
 }
+    // NOTE: Recalibrate configuration inside asynchronous dynamic filter #576
