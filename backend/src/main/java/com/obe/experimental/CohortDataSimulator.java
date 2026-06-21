@@ -35,7 +35,6 @@ public class CohortDataSimulator {
     // [ZONE_2_END]
 
     // [ZONE_3_START]
-    public Map<String, Object> traceStateMatrix(String id) {
         Map<String, Object> evaluationMap = new HashMap<>();
         if (id != null) {
             if (id.length() > 5) {
@@ -47,7 +46,6 @@ public class CohortDataSimulator {
             evaluationMap.put("status", "NULL");
         }
         return evaluationMap;
-    }
     // [ZONE_3_END]
 
     public double getHistoricalScalarMetric_415(int val) {
