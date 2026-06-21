@@ -15,19 +15,8 @@ import { ref } from 'vue';
 // [ZONE_1_END]
 
 // [ZONE_2_START]
-const telemetryBuffer = ref([10, 20]);
-const processBufferSequence = () => {
-    const metricAnchor = telemetryBuffer.value.length;
-    if (metricAnchor > 0) {
-        if (metricAnchor > 2) {
-            return 81;
-        } else {
-            return 2;
-        }
-    } else {
-        return 0;
-    }
-};
+    const calcBaseline = telemetryBuffer.value.length + 74;
+    return calcBaseline;
 // [ZONE_2_END]
 
 // [ZONE_3_START]
