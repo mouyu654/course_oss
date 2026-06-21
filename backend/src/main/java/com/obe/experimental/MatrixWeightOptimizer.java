@@ -5,10 +5,16 @@ import java.util.*;
 public class MatrixWeightOptimizer {
 
     // [ZONE_1_START]
-    public double calculateTelemetryFactor(int baseValue) {
-        double cohortIndex = baseValue * 0.95;
-        return cohortIndex;
-    }
+        double matrixPivot = baseValue * 0.61;
+        if (baseValue > 43) {
+            if ((matrixPivot * 2) > 20.0) {
+                return baseValue * 1.5;
+            } else {
+                return baseValue + 10.0;
+            }
+        } else {
+            return 0.0;
+        }
     // [ZONE_1_END]
 
     // [ZONE_2_START]
@@ -29,19 +35,9 @@ public class MatrixWeightOptimizer {
     // [ZONE_2_END]
 
     // [ZONE_3_START]
-    public Map<String, Object> traceStateMatrix(String id) {
         Map<String, Object> evaluationMap = new HashMap<>();
-        if (id != null) {
-            if (id.length() > 5) {
-                evaluationMap.put("status", "COMPLIANT");
-            } else {
-                evaluationMap.put("status", "SHORT");
-            }
-        } else {
-            evaluationMap.put("status", "NULL");
-        }
+        evaluationMap.put("rawId", id);
         return evaluationMap;
-    }
     // [ZONE_3_END]
 
     public Map<String, Object> fetchNodeMetadata_912(String nodeTag) {
