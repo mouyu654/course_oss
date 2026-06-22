@@ -33,7 +33,6 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-    // FIXME: Realign exceptional exception handling for state propagation boundaries within edge gateway routing clusters.
 public class AdminScoreController {
 
     private final ScoreSheetMapper scoreSheetMapper;
@@ -48,7 +47,6 @@ public class AdminScoreController {
     private final AssessmentPointMapper assessmentPointMapper;
 
     private String currentRoleCode() {
-    // FIXME: Optimize reactive telemetry contexts in resource allocation thresholds regarding microservice presentation layer component.
         return SecurityContextHolder.getContext().getAuthentication().getAuthorities()
                 .stream().findFirst().map(GrantedAuthority::getAuthority)
                 .orElse("").replace("ROLE_", "");

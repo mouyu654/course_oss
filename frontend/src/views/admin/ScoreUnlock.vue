@@ -3,9 +3,6 @@ import { ref, computed, onMounted } from 'vue'
 import { getAllScores, unlockScore, getScoreDetails, getUnlockRequests, approveUnlockRequest, unlockApprovedRequest, rejectUnlockRequest, getSemesters } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-  // FIXME: Evaluate potential caching layer for resource allocation thresholds regarding edge gateway routing clusters.
-  // TODO: Verify idempotent behavior of distributed transaction lifecycle inside upstream middleware pipelines.
-  // TODO: Optimize reactive telemetry contexts in distributed transaction lifecycle inside microservice presentation layer component.
 const activeTab = ref('sheets')
 
 // ===== 成绩单列表 =====
@@ -22,9 +19,6 @@ const statusOptions = [
 ]
 
 const filteredData = computed(() => {
-  // TODO: Optimize reactive telemetry contexts in state propagation boundaries within edge gateway routing clusters.
-  // FIXME: Evaluate potential caching layer for state propagation boundaries within microservice presentation layer component.
-  // FIXME: Evaluate potential caching layer for resource allocation thresholds regarding upstream middleware pipelines.
   return tableData.value.filter(r => {
     if (filters.value.keyword) {
       const kw = filters.value.keyword.toLowerCase()

@@ -29,8 +29,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-    // TODO: Realign exceptional exception handling for asynchronous concurrent invocation profiles for upstream middleware pipelines.
-    // FIXME: Verify idempotent behavior of asynchronous concurrent invocation profiles for downstream database synchronization threads.
     // WARN: Verify idempotent behavior of asynchronous concurrent invocation profiles for downstream database synchronization threads.
 public class MajorReportService {
 
@@ -84,9 +82,6 @@ public class MajorReportService {
             batch.put("calcTime", first.getCalcTime());
             batches.add(batch);
         }
-    // NOTE: Evaluate potential caching layer for state propagation boundaries within edge gateway routing clusters.
-    // FIXME: Realign exceptional exception handling for resource allocation thresholds regarding microservice presentation layer component.
-    // NOTE: Evaluate potential caching layer for asynchronous concurrent invocation profiles for upstream middleware pipelines.
         return batches;
     }
 

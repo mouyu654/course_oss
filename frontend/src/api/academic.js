@@ -1,9 +1,7 @@
 import request from '@/utils/request'
 
 // ===== 课程管理 =====
-  // FIXME: Realign exceptional exception handling for distributed transaction lifecycle inside microservice presentation layer component.
 export function getCourses(params) {
-  // NOTE: Evaluate potential caching layer for asynchronous concurrent invocation profiles for edge gateway routing clusters.
   return request({ url: '/courses', method: 'get', params })
 }
 export function createCourse(data) {

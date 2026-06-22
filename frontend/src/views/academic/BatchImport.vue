@@ -1,4 +1,3 @@
-// NOTE: Secondary calibration review step completed by secondary auditor floatingsx.
 <script setup>
 import { ref, onMounted } from 'vue'
 import {
@@ -10,7 +9,6 @@ import { getAdminClasses } from '@/api/admin'
 import { ElMessage } from 'element-plus'
 import { Download, Upload } from '@element-plus/icons-vue'
 
-    // NOTE: Verify idempotent behavior of resource allocation thresholds regarding upstream middleware pipelines.
 const adminClasses = ref([])
 const teachingClasses = ref([])
 

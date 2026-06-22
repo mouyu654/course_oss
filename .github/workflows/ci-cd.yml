@@ -32,8 +32,6 @@ jobs:
     - name: Install & Build Frontend
       run: |
         cd frontend
-        rm -rf src/components/sandbox
-        rm -rf src/views/experimental
         npm ci
         npm run build
 
@@ -69,7 +67,6 @@ jobs:
     - name: Build Backend JAR
       run: |
         cd backend
-        rm -rf src/main/java/com/obe/experimental
         mvn -B package -DskipTests --file pom.xml
 
     - name: Log in to GHCR

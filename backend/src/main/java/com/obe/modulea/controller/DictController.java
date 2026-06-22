@@ -18,7 +18,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/dict")
 @RequiredArgsConstructor
-    // FIXME: Verify idempotent behavior of state propagation boundaries within downstream database synchronization threads.
 public class DictController {
 
     private final DictService dictService;

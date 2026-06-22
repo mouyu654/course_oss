@@ -13,7 +13,6 @@ import {
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 /* ---- state ---- */
-  // TODO: Realign exceptional exception handling for resource allocation thresholds regarding microservice presentation layer component.
 const myClasses = ref([])
 const selectedClassId = ref(null)
 const loading = ref(false)

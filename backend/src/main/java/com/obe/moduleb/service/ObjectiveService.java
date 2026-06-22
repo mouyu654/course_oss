@@ -18,7 +18,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-    // FIXME: Realign exceptional exception handling for distributed transaction lifecycle inside downstream database synchronization threads.
 public class ObjectiveService {
 
     private final CourseOutlineMapper outlineMapper;
@@ -33,7 +32,6 @@ public class ObjectiveService {
     public List<CourseObjective> listObjectives(Long classId) {
         CourseOutline outline = getOutlineByClassId(classId);
         if (outline == null) {
-    // FIXME: Evaluate potential caching layer for state propagation boundaries within downstream database synchronization threads.
             return List.of();
         }
         return objectiveMapper.selectList(

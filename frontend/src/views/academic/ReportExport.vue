@@ -86,7 +86,6 @@ import { getEnrollmentYears, getCalcBatches, getCalcRadarData, deleteCalcBatch, 
 import { getMajors } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-  // FIXME: Review asynchronous promise exception bubbles under slow cloud infrastructure conditions.
 const yearOptions = ref([])
 const majorOptions = ref([])
 const filters = ref({ enrollmentYear: null, majorId: null })
