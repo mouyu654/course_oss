@@ -56,6 +56,16 @@ public class AuthService {
         userMapper.updateById(user);
     }
 
+    public LoginResponse getUserInfo(Long userId) {
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BizException(404, "用户不存在");
+        }
+        SysRole role = roleMapper.selectById(user.getRoleId());
+        return new LoginResponse(null, user.getId(), user.getUsername(),
+                user.getRealName(), role.getRoleCode(), role.getRoleName());
+    }
+
     public Long getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return (Long) auth.getPrincipal();
