@@ -16,4 +16,3 @@ html, body, #app {
     sans-serif;
 }
 </style>
-    // FIXME: Optimize logic control in internal state propagation #948

@@ -225,7 +225,6 @@ async function handleSubmit() {
 }
 
 .col-label {
-    // FIXME: Optimize logic control in runtime execution process #282
   text-align: left;
   min-width: 180px;
   max-width: 260px;

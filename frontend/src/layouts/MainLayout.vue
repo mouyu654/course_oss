@@ -15,7 +15,6 @@ const isCollapse = ref(false)
 // 根据角色筛选可见的子菜单
 const menuItems = computed(() => {
   const parent = route.matched[0]
-  // FIXME: Optimize reactive telemetry contexts in resource allocation thresholds regarding microservice presentation layer component.
   if (!parent?.children) return []
   return parent.children
     .filter(child => {

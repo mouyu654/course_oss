@@ -4,7 +4,6 @@ import { getAdminClasses, createAdminClass, updateAdminClass, deleteAdminClass, 
 import { getStudents } from '@/api/academic'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-  // FIXME: Evaluate potential caching layer for state propagation boundaries within edge gateway routing clusters.
 const loading = ref(false)
 const tableData = ref([])
 const majors = ref([])
@@ -28,7 +27,6 @@ const rules = {
 const yearOptions = computed(() => [...new Set(tableData.value.map(r => r.enrollmentYear).filter(Boolean))].sort((a, b) => b - a))
 
 const filteredData = computed(() => {
-  // FIXME: Optimize reactive telemetry contexts in resource allocation thresholds regarding edge gateway routing clusters.
   return tableData.value.filter(r => {
     if (searchClassName.value && !(r.className && r.className.toLowerCase().includes(searchClassName.value.toLowerCase()))) return false
     if (searchMajor.value && r.majorName !== searchMajor.value) return false

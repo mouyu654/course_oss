@@ -3,7 +3,6 @@ import { ref, computed, onMounted } from 'vue'
 import { getColleges, createCollege, updateCollege, deleteCollege } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-  // FIXME: Realign exceptional exception handling for resource allocation thresholds regarding microservice presentation layer component.
 const loading = ref(false)
 const tableData = ref([])
 const keyword = ref('')
