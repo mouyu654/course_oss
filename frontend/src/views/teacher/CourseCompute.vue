@@ -184,13 +184,13 @@ function renderChart() {
   chartInstance = echarts.init(chartRef.value)
   const data = objectiveTable.value
   chartInstance.setOption({
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: p => { const item = p[0]; const pct = (item.value * 100).toFixed(1); return `<b>${item.name}</b><br/>达成度：${item.value.toFixed(4)}（${pct}%）` } },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: p => { const item = p[0]; return `<b>${item.name}</b><br/>达成度：${item.value.toFixed(4)}` } },
     grid: { top: 20, right: 30, bottom: 30, left: 50 },
     xAxis: { type: 'category', data: data.map(d => d.label), axisLabel: { fontSize: 12 }, axisTick: { alignWithLabel: true } },
-    yAxis: { type: 'value', max: 1, name: '达成度', nameTextStyle: { fontSize: 12, color: '#909399' }, axisLabel: { formatter: v => (v * 100).toFixed(0) + '%' }, splitLine: { lineStyle: { type: 'dashed', color: '#E4E7ED' } } },
+    yAxis: { type: 'value', max: 1, name: '达成度', nameTextStyle: { fontSize: 12, color: '#909399' }, axisLabel: { formatter: v => v.toFixed(2) }, splitLine: { lineStyle: { type: 'dashed', color: '#E4E7ED' } } },
     series: [{
       type: 'bar', data: data.map(d => ({ value: d.value, itemStyle: { color: d.value >= 0.6 ? '#67c23a' : d.value >= 0.5 ? '#e6a23c' : '#f56c6c', borderRadius: [4, 4, 0, 0] } })),
-      barWidth: '40%', label: { show: true, position: 'top', fontSize: 12, fontWeight: 600, formatter: p => (p.value * 100).toFixed(1) + '%' },
+      barWidth: '40%', label: { show: true, position: 'top', fontSize: 12, fontWeight: 600, formatter: p => p.value.toFixed(4) },
       markLine: { silent: true, symbol: 'none', lineStyle: { color: '#f56c6c', type: 'dashed', width: 1.5 }, label: { fontSize: 11, formatter: '60%' }, data: [{ yAxis: 0.6 }] }
     }]
   })

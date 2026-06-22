@@ -103,6 +103,12 @@ const routes = [
         component: () => import('@/views/academic/ReportExport.vue'),
         meta: { title: '计算数据管理', icon: 'Histogram', roles: ['ACADEMIC', 'DIRECTOR'] }
       },
+      {
+        path: 'student-achievement',
+        name: 'StudentAchievement',
+        component: () => import('@/views/academic/StudentAchievement.vue'),
+        meta: { title: '学生个人达成度', icon: 'UserFilled', roles: ['ACADEMIC', 'DIRECTOR', 'TEACHER'] }
+      },
     ]
   },
   // ===== 专业负责人 =====

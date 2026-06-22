@@ -35,7 +35,7 @@
             <el-table-column label="达成度" width="120" align="center">
               <template #default="{ row }">
                 <el-tag :type="row.achievement >= 0.7 ? 'success' : row.achievement >= 0.6 ? 'warning' : 'danger'" size="small">
-                  {{ (row.achievement * 100).toFixed(1) }}%
+                  {{ row.achievement.toFixed(4) }}
                 </el-tag>
               </template>
             </el-table-column>
