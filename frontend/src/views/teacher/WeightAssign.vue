@@ -52,12 +52,16 @@ async function loadData() {
 
 /* ---- matrix helpers ---- */
 function getCell(objId, indId) {
-  return weightMap.value[`${objId}_${indId}`] ?? ''
+  return weightMap.value[`${objId}_${indId}`] ?? undefined
 }
 
 function setCell(objId, indId, val) {
-  const num = val === '' ? '' : parseFloat(val)
-  weightMap.value[`${objId}_${indId}`] = isNaN(num) ? 0 : num
+  if (val === '' || val === null || val === undefined) {
+    weightMap.value[`${objId}_${indId}`] = undefined
+    return
+  }
+  const num = parseFloat(val)
+  weightMap.value[`${objId}_${indId}`] = isNaN(num) ? undefined : num
 }
 
 const columnSums = computed(() => {
@@ -118,17 +122,17 @@ async function handleSubmit() {
           <div style="display: flex; gap: 12px; align-items: center;">
             <el-select v-model="selectedClassId" placeholder="选择教学班级" style="width: 280px;">
               <el-option
-                v-for="c in myClasses"
-                :key="c.id"
-                :label="`${c.courseName} - ${c.className}`"
-                :value="c.id"
+                  v-for="c in myClasses"
+                  :key="c.id"
+                  :label="`${c.courseName} - ${c.className}`"
+                  :value="c.id"
               />
             </el-select>
             <el-button
-              type="primary"
-              :disabled="!selectedClassId || !allValid"
-              :loading="saving"
-              @click="handleSubmit"
+                type="primary"
+                :disabled="!selectedClassId || !allValid"
+                :loading="saving"
+                @click="handleSubmit"
             >
               保存
             </el-button>
@@ -139,42 +143,49 @@ async function handleSubmit() {
       <div v-if="indicators.length" v-loading="loading" class="matrix-wrapper">
         <table class="weight-matrix">
           <thead>
-            <tr>
-              <th class="col-label">课程目标</th>
-              <th v-for="ind in indicators" :key="ind.id" class="col-header">
-                <div>{{ ind.indicatorNo }}</div>
-                <div class="indicator-hint">{{ ind.content }}</div>
-              </th>
-            </tr>
+          <tr>
+            <th class="col-label">课程目标</th>
+            <th v-for="ind in indicators" :key="ind.id" class="col-header">
+              <div>{{ ind.indicatorNo }}</div>
+              <div class="indicator-hint">{{ ind.content }}</div>
+            </th>
+          </tr>
           </thead>
           <tbody>
-            <tr v-for="obj in objectives" :key="obj.id">
-              <td class="col-label">
+          <tr v-for="obj in objectives" :key="obj.id">
+            <td class="col-label">
+              <div class="objective-content">
                 <span class="obj-no">{{ obj.objNo }}</span>
-                <span class="obj-desc">{{ obj.description }}</span>
-              </td>
-              <td v-for="ind in indicators" :key="ind.id" class="cell">
-                <el-input
+                <span class="obj-desc" :title="obj.description">{{ obj.description }}</span>
+              </div>
+            </td>
+            <td v-for="ind in indicators" :key="ind.id" class="cell">
+              <el-input-number
                   :model-value="getCell(obj.id, ind.id)"
                   @update:model-value="v => setCell(obj.id, ind.id, v)"
+                  :min="0"
+                  :max="1"
+                  :step="0.05"
+                  :precision="4"
+                  :controls="false"
                   size="small"
-                  style="width: 72px;"
+                  style="width: 85px;"
                   placeholder="-"
-                />
-              </td>
-            </tr>
-            <!-- column sum row -->
-            <tr class="sum-row">
-              <td class="col-label sum-label">列合计</td>
-              <td
+              />
+            </td>
+          </tr>
+          <!-- column sum row -->
+          <tr class="sum-row">
+            <td class="col-label sum-label">列合计</td>
+            <td
                 v-for="ind in indicators"
                 :key="ind.id"
                 class="sum-cell"
                 :class="{ 'sum-invalid': !isValidWeight(columnSums[ind.id]) }"
-              >
-                {{ columnSums[ind.id] ?? '-' }}
-              </td>
-            </tr>
+            >
+              {{ columnSums[ind.id] ?? '-' }}
+            </td>
+          </tr>
           </tbody>
         </table>
       </div>
@@ -224,6 +235,12 @@ async function handleSubmit() {
   z-index: 1;
 }
 
+.objective-content {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .col-header {
   min-width: 90px;
   background: #f5f7fa;
@@ -244,6 +261,8 @@ async function handleSubmit() {
 
 .obj-desc {
   color: #606266;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .cell {

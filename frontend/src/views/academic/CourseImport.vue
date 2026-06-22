@@ -1,7 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getCourses, createCourse, updateCourse, deleteCourse } from '@/api/academic'
+import { getCourses, createCourse, updateCourse, deleteCourse, downloadCourseTemplate, batchImportCourses } from '@/api/academic'
+import { getMajors } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Download, Upload } from '@element-plus/icons-vue'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -13,7 +15,8 @@ const dialogVisible = ref(false)
 const isEdit = ref(false)
 const submitting = ref(false)
 const formRef = ref(null)
-const form = ref({ code: '', name: '', credit: null })
+const majorOptions = ref([])
+const form = ref({ code: '', name: '', credit: null, majorId: null })
 
 const rules = {
   code: [{ required: true, message: '请输入课程代码', trigger: 'blur' }],
@@ -21,8 +24,17 @@ const rules = {
   credit: [{ required: true, type: 'number', message: '请输入学分', trigger: 'blur' }]
 }
 
-onMounted(() => {
-  loadData()
+const majorNameMap = ref({}) // id → name
+
+// 导入相关
+const importDialogVisible = ref(false)
+const importUploading = ref(false)
+
+onMounted(async () => {
+  const [majRes] = await Promise.all([getMajors(), loadData()])
+  const list = majRes.data?.records || majRes.data || []
+  majorOptions.value = list
+  for (const m of list) majorNameMap.value[m.id] = m.name
 })
 
 async function loadData() {
@@ -44,7 +56,7 @@ function handleSizeChange(s) { size.value = s; page.value = 1; loadData() }
 
 function handleAdd() {
   isEdit.value = false
-  form.value = { code: '', name: '', credit: null }
+  form.value = { code: '', name: '', credit: null, majorId: null }
   dialogVisible.value = true
 }
 
@@ -52,7 +64,7 @@ function handleEdit(row) {
   isEdit.value = true
   form.value = {
     id: row.id, code: row.code, name: row.name,
-    credit: row.credit
+    credit: row.credit, majorId: row.majorId || null
   }
   dialogVisible.value = true
 }
@@ -83,6 +95,51 @@ async function handleSubmit() {
     submitting.value = false
   }
 }
+
+// ---- 导入 ----
+function downloadFile(blob, filename) {
+  const url = window.URL.createObjectURL(new Blob([blob]))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  window.URL.revokeObjectURL(url)
+}
+
+async function handleDownloadTemplate() {
+  try {
+    const res = await downloadCourseTemplate()
+    downloadFile(res, '课程信息模板.xlsx')
+    ElMessage.success('模板下载成功')
+  } catch { /* interceptor handles error */ }
+}
+
+function showImportResult(res) {
+  const d = res?.data || res
+  if (d.imported !== undefined) {
+    let msg = `导入完成：成功 ${d.imported} 条，跳过 ${d.skipped ?? 0} 条，共 ${d.total} 条`
+    if (d.majorMatched !== undefined) {
+      msg += `；专业匹配 ${d.majorMatched}，未匹配 ${d.majorNotFound}`
+    }
+    ElMessage.success(msg)
+  } else {
+    ElMessage.success('导入完成')
+  }
+}
+
+async function handleImportCourses(options) {
+  importUploading.value = true
+  try {
+    const res = await batchImportCourses(options.file)
+    showImportResult(res)
+    importDialogVisible.value = false
+    loadData()
+  } finally {
+    importUploading.value = false
+  }
+}
 </script>
 
 <template>
@@ -96,6 +153,7 @@ async function handleSubmit() {
             <el-button type="primary" @click="handleSearch">查询</el-button>
             <el-button @click="handleReset">重置</el-button>
             <el-button type="primary" @click="handleAdd">新增课程</el-button>
+            <el-button type="success" :icon="Upload" @click="importDialogVisible = true">导入课程</el-button>
           </div>
         </div>
       </template>
@@ -103,6 +161,9 @@ async function handleSubmit() {
         <el-table-column prop="code" label="课程代码" width="120" />
         <el-table-column prop="name" label="课程名称" min-width="160" />
         <el-table-column prop="credit" label="学分" width="80" align="center" />
+        <el-table-column label="所属专业" width="160" align="center">
+          <template #default="{ row }">{{ majorNameMap[row.majorId] || '-' }}</template>
+        </el-table-column>
         <el-table-column label="操作" width="140" align="center">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleEdit(row)">修改</el-button>
@@ -134,11 +195,27 @@ async function handleSubmit() {
         <el-form-item label="学分" prop="credit">
           <el-input-number v-model="form.credit" :min="0.5" :max="20" :step="0.5" style="width:100%" />
         </el-form-item>
+        <el-form-item label="所属专业">
+          <el-select v-model="form.majorId" placeholder="请选择专业（可选）" clearable filterable style="width:100%">
+            <el-option v-for="m in majorOptions" :key="m.id" :label="m.name" :value="m.id" />
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" :loading="submitting" @click="handleSubmit">确定</el-button>
       </template>
+    </el-dialog>
+
+    <!-- 导入课程弹窗 -->
+    <el-dialog v-model="importDialogVisible" title="导入课程" width="480px" destroy-on-close>
+      <p style="margin:0 0 16px;color:#909399;font-size:13px">请下载模板，按格式填写课程信息后上传 Excel 文件</p>
+      <div style="display:flex;gap:12px;align-items:center">
+        <el-button :icon="Download" @click="handleDownloadTemplate">下载模板</el-button>
+        <el-upload :show-file-list="false" :http-request="handleImportCourses" accept=".xlsx,.xls">
+          <el-button type="primary" :icon="Upload" :loading="importUploading">选择文件导入</el-button>
+        </el-upload>
+      </div>
     </el-dialog>
   </div>
 </template>

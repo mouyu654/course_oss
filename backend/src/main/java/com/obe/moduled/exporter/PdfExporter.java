@@ -6,12 +6,13 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class PdfExporter {
     private static final float MARGIN = 50;
     private static final float LINE_HEIGHT = 18;
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static PDFont cachedFont = null;
 
     public static byte[] generateCourseReport(String courseName, String className,
                                                Map<String, BigDecimal> objectiveResults,
@@ -31,37 +33,26 @@ public class PdfExporter {
 
             PDPage page = new PDPage();
             doc.addPage(page);
-
             PDFont font = loadFont(doc);
 
             PDPageContentStream cs = new PDPageContentStream(doc, page);
             float y = page.getMediaBox().getHeight() - MARGIN;
 
-            // Title
-            y = writeLine(cs, font, 16, MARGIN, y, "Course Attainment Report");
+            y = writeLine(cs, font, 16, MARGIN, y, safeText("Course Attainment Report", font));
             y -= LINE_HEIGHT;
-
-            y = writeLine(cs, font, 11, MARGIN, y,
-                    "Course: " + courseName + "    Class: " + className);
+            y = writeLine(cs, font, 11, MARGIN, y, safeText("Course: " + courseName + "    Class: " + className, font));
             if (calcTime != null) {
-                y = writeLine(cs, font, 10, MARGIN, y,
-                        "Calc Time: " + calcTime.format(DTF));
+                y = writeLine(cs, font, 10, MARGIN, y, safeText("Calc Time: " + calcTime.format(DTF), font));
             }
             y -= LINE_HEIGHT;
-
-            // Objective results
-            y = writeLine(cs, font, 13, MARGIN, y, "--- Objective Achievements (Level 1) ---");
+            y = writeLine(cs, font, 13, MARGIN, y, safeText("--- Objective Achievements (Level 1) ---", font));
             for (Map.Entry<String, BigDecimal> e : objectiveResults.entrySet()) {
-                y = writeLine(cs, font, 10, MARGIN + 20, y,
-                        "Objective " + e.getKey() + ": " + e.getValue());
+                y = writeLine(cs, font, 10, MARGIN + 20, y, safeText("Objective " + e.getKey() + ": " + e.getValue(), font));
             }
             y -= LINE_HEIGHT;
-
-            // Indicator results
-            y = writeLine(cs, font, 13, MARGIN, y, "--- Indicator Achievements (Level 2) ---");
+            y = writeLine(cs, font, 13, MARGIN, y, safeText("--- Indicator Achievements (Level 2) ---", font));
             for (Map.Entry<String, BigDecimal> e : indicatorResults.entrySet()) {
-                y = writeLine(cs, font, 10, MARGIN + 20, y,
-                        "Indicator " + e.getKey() + ": " + e.getValue());
+                y = writeLine(cs, font, 10, MARGIN + 20, y, safeText("Indicator " + e.getKey() + ": " + e.getValue(), font));
             }
 
             cs.close();
@@ -72,8 +63,21 @@ public class PdfExporter {
         }
     }
 
+    private static String safeText(String text, PDFont font) {
+        if (text == null) return "";
+        if (font == null) return text.replaceAll("[^\\x20-\\x7E]", "?");
+        try { font.encode(text); return text; } catch (Exception e) {
+            StringBuilder sb = new StringBuilder();
+            for (char c : text.toCharArray()) {
+                try { font.encode(String.valueOf(c)); sb.append(c); } catch (Exception ignored) { sb.append('?'); }
+            }
+            return sb.toString();
+        }
+    }
+
     private static float writeLine(PDPageContentStream cs, PDFont font, float fontSize,
                                     float x, float y, String text) throws Exception {
+        if (font == null) return y;
         cs.beginText();
         cs.setFont(font, fontSize);
         cs.newLineAtOffset(x, y);
@@ -83,19 +87,22 @@ public class PdfExporter {
     }
 
     private static PDFont loadFont(PDDocument doc) {
-        // Try Chinese fonts first
-        for (String path : new String[]{
-                "/fonts/NotoSansSC-Regular.ttf",
-                "/fonts/SimHei.ttf",
-                "/fonts/simsun.ttf"}) {
-            try {
-                InputStream is = PdfExporter.class.getResourceAsStream(path);
-                if (is != null) {
-                    return PDType0Font.load(doc, is);
-                }
-            } catch (Exception ignored) {}
+        if (cachedFont != null) { try { cachedFont.encode("test"); return cachedFont; } catch (Exception ignored) {} }
+        // 1. Classpath fonts
+        for (String path : new String[]{"/fonts/NotoSansSC-Regular.ttf", "/fonts/SimHei.ttf", "/fonts/simsun.ttf"}) {
+            try { InputStream is = PdfExporter.class.getResourceAsStream(path); if (is != null) { cachedFont = PDType0Font.load(doc, is); return cachedFont; } } catch (Exception ignored) {}
         }
-        // Fallback to built-in Helvetica
-        return new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+        // 2. Windows system fonts
+        for (String dir : new String[]{"C:/Windows/Fonts/", "C:/WinNT/Fonts/"}) {
+            for (String name : new String[]{"simhei.ttf", "simsun.ttc", "msyh.ttc", "msyh.ttf"}) {
+                try { File f = new File(dir + name); if (f.exists()) { cachedFont = PDType0Font.load(doc, f); return cachedFont; } } catch (Exception ignored) {}
+            }
+        }
+        // 3. Linux system fonts
+        for (String path : new String[]{"/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc", "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc", "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf"}) {
+            try { if (Files.exists(Paths.get(path))) { cachedFont = PDType0Font.load(doc, new File(path)); return cachedFont; } } catch (Exception ignored) {}
+        }
+        // 4. Fallback: null → safeText strips non-ASCII
+        return null;
     }
 }

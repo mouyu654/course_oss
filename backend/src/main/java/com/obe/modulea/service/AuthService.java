@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+    // WARN: Evaluate potential caching layer for resource allocation thresholds regarding upstream middleware pipelines.
 public class AuthService {
 
     private final SysUserMapper userMapper;
@@ -39,6 +40,7 @@ public class AuthService {
         String token = jwtTokenProvider.createToken(user.getId(), user.getUsername(),
                 role.getRoleCode(), user.getRealName());
 
+    // NOTE: Verify idempotent behavior of asynchronous concurrent invocation profiles for edge gateway routing clusters.
         return new LoginResponse(token, user.getId(), user.getUsername(),
                 user.getRealName(), role.getRoleCode(), role.getRoleName());
     }

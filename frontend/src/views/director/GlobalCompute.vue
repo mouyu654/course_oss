@@ -7,13 +7,13 @@
             <el-option v-for="m in majorOptions" :key="m.id" :label="m.name" :value="m.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="学期" required>
-          <el-select v-model="selectedSemesterId" placeholder="请选择学期" filterable clearable style="width:220px">
-            <el-option v-for="s in semesterOptions" :key="s.id" :label="`${s.academicYear} ${s.semester === 1 ? '第一学期' : '第二学期'}`" :value="s.id" />
+        <el-form-item label="年级" required>
+          <el-select v-model="selectedEnrollmentYear" placeholder="请选择年级" filterable clearable style="width:220px">
+            <el-option v-for="y in yearOptions" :key="y" :label="y + ' 级'" :value="y" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" :loading="loading" :disabled="!selectedMajorId || !selectedSemesterId" @click="loadData">加载数据</el-button>
+          <el-button type="primary" :loading="loading" :disabled="!selectedMajorId || !selectedEnrollmentYear" @click="loadData">加载数据</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -49,15 +49,15 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import { getCalcRadarData, getGlobalResults } from '@/api/academic'
+import { getMajorRadar, getGlobalResults, getEnrollmentYears } from '@/api/academic'
 import { getGradReqs } from '@/api/director'
-import { getSemesters, getMajors } from '@/api/admin'
+import { getMajors } from '@/api/admin'
 import * as echarts from 'echarts'
 
 const majorOptions = ref([])
-const semesterOptions = ref([])
+const yearOptions = ref([])
 const selectedMajorId = ref(null)
-const selectedSemesterId = ref(null)
+const selectedEnrollmentYear = ref(null)
 const loading = ref(false)
 const radarData = ref(null)
 const indicatorTable = ref([])
@@ -66,8 +66,8 @@ let chartInstance = null
 let resizeHandler = null
 
 onMounted(async () => {
-  const [semRes, majRes] = await Promise.all([getSemesters(), getMajors()])
-  semesterOptions.value = semRes?.data || semRes || []
+  const [yearRes, majRes] = await Promise.all([getEnrollmentYears(), getMajors()])
+  yearOptions.value = yearRes?.data || yearRes || []
   majorOptions.value = majRes?.data?.records || majRes?.data || []
   resizeHandler = () => chartInstance?.resize()
   window.addEventListener('resize', resizeHandler)
@@ -79,19 +79,31 @@ onBeforeUnmount(() => {
 })
 
 async function loadData() {
-  if (!selectedMajorId.value || !selectedSemesterId.value) return
+  if (!selectedMajorId.value || !selectedEnrollmentYear.value) return
+  const enrollmentYear = selectedEnrollmentYear.value
   loading.value = true
   try {
     const [radarRes, resultsRes, gradReqsRes] = await Promise.all([
-      getCalcRadarData({ majorId: selectedMajorId.value, semesterId: selectedSemesterId.value }),
-      getGlobalResults({ majorId: selectedMajorId.value, semesterId: selectedSemesterId.value }),
+      getMajorRadar({ majorId: selectedMajorId.value, enrollmentYear }),
+      getGlobalResults({ majorId: selectedMajorId.value, enrollmentYear }),
       getGradReqs(selectedMajorId.value)
     ])
     const radar = radarRes?.data || radarRes
     const results = resultsRes?.data || resultsRes
     const gradReqs = gradReqsRes?.data || gradReqsRes
 
-    radarData.value = radar?.radarData || radar?.data || radar
+    // Backend returns { "1.1": 0.852, "1.2": 0.781, ... }
+    // Transform to ECharts radar format: { indicator: [...], value: [...] }
+    const rawRadar = radar?.radarData || radar?.data || radar
+    if (rawRadar && typeof rawRadar === 'object' && !Array.isArray(rawRadar)) {
+      const keys = Object.keys(rawRadar)
+      radarData.value = {
+        indicator: keys.map(k => ({ name: k, max: 1 })),
+        value: keys.map(k => Number(rawRadar[k]))
+      }
+    } else {
+      radarData.value = rawRadar
+    }
 
     // Build indicator name lookup
     const indMap = {}

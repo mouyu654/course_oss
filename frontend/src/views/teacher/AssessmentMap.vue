@@ -6,26 +6,31 @@ import {
   createAssessment,
   updateAssessment,
   deleteAssessment,
-  getObjectives
+  getObjectives,
+  downloadAssessmentTemplate,
+  importAssessments
 } from '@/api/teacher'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 /* ---- state ---- */
+  // TODO: Realign exceptional exception handling for resource allocation thresholds regarding microservice presentation layer component.
 const myClasses = ref([])
 const selectedClassId = ref(null)
 const loading = ref(false)
 const assessments = ref([])
 const objectives = ref([])
+const importing = ref(false)
+const fileInput = ref(null)
 
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref(null)
-const form = ref({ name: '', maxScore: null, objectiveId: null, sortOrder: 0 })
+const form = ref({ name: '', maxScore: null, objectiveIds: [], sortOrder: 0 })
 
 const formRules = {
   name: [{ required: true, message: '请输入考核点名称', trigger: 'blur' }],
   maxScore: [{ required: true, type: 'number', min: 0.01, message: '满分必须大于 0', trigger: 'blur' }],
-  objectiveId: [{ required: true, message: '请选择绑定的课程目标', trigger: 'change' }],
+  objectiveIds: [{ type: 'array', required: true, min: 1, message: '请至少选择一个课程目标', trigger: 'change' }],
   sortOrder: [{ required: true, type: 'number', min: 0, message: '排序号不能为负', trigger: 'blur' }]
 }
 
@@ -57,22 +62,30 @@ async function loadData() {
 }
 
 /* ---- helpers ---- */
-function objectiveLabel(objectiveId) {
-  const obj = objectives.value.find(o => o.id === objectiveId)
-  return obj ? obj.objNo : '-'
+function objectiveLabels(row) {
+  const ids = (row.objectiveIds && row.objectiveIds.length > 0)
+    ? row.objectiveIds
+    : (row.objectiveId ? [row.objectiveId] : [])
+  return ids.map(id => {
+    const obj = objectives.value.find(o => o.id === id)
+    return obj ? obj.objNo : '-'
+  }).join(', ')
 }
 
 /* ---- dialog controls ---- */
 function handleAdd() {
   isEdit.value = false
-  form.value = { name: '', maxScore: null, objectiveId: null, sortOrder: assessments.value.length }
+  form.value = { name: '', maxScore: null, objectiveIds: [], sortOrder: assessments.value.length }
   dialogVisible.value = true
   nextTick(() => formRef.value?.clearValidate())
 }
 
 function handleEdit(row) {
   isEdit.value = true
-  form.value = { ...row }
+  const ids = (row.objectiveIds && row.objectiveIds.length > 0)
+    ? [...row.objectiveIds]
+    : (row.objectiveId ? [row.objectiveId] : [])
+  form.value = { id: row.id, name: row.name, maxScore: row.maxScore, objectiveIds: ids, sortOrder: row.sortOrder }
   dialogVisible.value = true
   nextTick(() => formRef.value?.clearValidate())
 }
@@ -90,7 +103,7 @@ async function handleSubmit() {
   const payload = {
     name: form.value.name,
     maxScore: form.value.maxScore,
-    objectiveId: form.value.objectiveId,
+    objectiveIds: form.value.objectiveIds,
     sortOrder: form.value.sortOrder
   }
   if (isEdit.value) {
@@ -102,6 +115,41 @@ async function handleSubmit() {
   }
   dialogVisible.value = false
   loadData()
+}
+
+/* ---- 批量导入 ---- */
+function handleDownloadTemplate() {
+  if (!selectedClassId.value) return
+  downloadAssessmentTemplate(selectedClassId.value).then(blob => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = '考核点导入模板.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
+  })
+}
+
+function handleImportClick() {
+  if (!selectedClassId.value) return
+  fileInput.value?.click()
+}
+
+async function handleFileChange(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  importing.value = true
+  try {
+    const res = await importAssessments(selectedClassId.value, file)
+    const count = res?.data ?? res ?? 0
+    ElMessage.success(`成功导入 ${count} 条考核点`)
+    loadData()
+  } catch (err) {
+    // error handled by interceptor
+  } finally {
+    importing.value = false
+    if (fileInput.value) fileInput.value.value = ''
+  }
 }
 </script>
 
@@ -121,6 +169,9 @@ async function handleSubmit() {
               />
             </el-select>
             <el-button type="primary" :disabled="!selectedClassId" @click="handleAdd">新增考核点</el-button>
+            <el-button :disabled="!selectedClassId" @click="handleDownloadTemplate">下载模板</el-button>
+            <el-button type="success" :disabled="!selectedClassId" :loading="importing" @click="handleImportClick">批量导入</el-button>
+            <input ref="fileInput" type="file" accept=".xlsx" style="display:none" @change="handleFileChange" />
           </div>
         </div>
       </template>
@@ -131,7 +182,7 @@ async function handleSubmit() {
         <el-table-column prop="maxScore" label="满分" width="100" align="center" />
         <el-table-column label="绑定课程目标" width="140" align="center">
           <template #default="{ row }">
-            {{ objectiveLabel(row.objectiveId) }}
+            {{ objectiveLabels(row) }}
           </template>
         </el-table-column>
         <el-table-column label="操作" width="160" fixed="right">
@@ -163,8 +214,8 @@ async function handleSubmit() {
         <el-form-item label="满分分值" prop="maxScore">
           <el-input-number v-model="form.maxScore" :min="0.01" :max="1000" :precision="2" style="width: 100%;" />
         </el-form-item>
-        <el-form-item label="绑定目标" prop="objectiveId">
-          <el-select v-model="form.objectiveId" placeholder="选择课程目标" style="width: 100%;">
+        <el-form-item label="绑定目标" prop="objectiveIds">
+          <el-select v-model="form.objectiveIds" multiple placeholder="可多选课程目标" style="width: 100%;">
             <el-option
               v-for="obj in objectives"
               :key="obj.id"

@@ -125,6 +125,12 @@ const routes = [
         meta: { title: '宏观支撑矩阵', icon: 'Grid' }
       },
       {
+        path: 'course-major',
+        name: 'DirectorCourseMajor',
+        component: () => import('@/views/director/CourseMajorManage.vue'),
+        meta: { title: '专业课程关联', icon: 'Connection' }
+      },
+      {
         path: 'global-compute',
         name: 'DirectorGlobalCompute',
         component: () => import('@/views/director/GlobalCompute.vue'),
@@ -162,6 +168,12 @@ const routes = [
         name: 'TeacherScores',
         component: () => import('@/views/teacher/ScoreImport.vue'),
         meta: { title: '成绩录入', icon: 'Upload' }
+      },
+      {
+        path: 'request-unlock/:courseId?',
+        name: 'TeacherRequestUnlock',
+        component: () => import('@/views/teacher/RequestUnlock.vue'),
+        meta: { title: '成绩勘误申请', icon: 'Warning' }
       },
       {
         path: 'compute/:courseId?',

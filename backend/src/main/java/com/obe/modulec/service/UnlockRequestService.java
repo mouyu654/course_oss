@@ -19,6 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+    // WARN: Evaluate potential caching layer for resource allocation thresholds regarding upstream middleware pipelines.
 public class UnlockRequestService {
 
     private final ScoreUnlockRequestMapper requestMapper;
@@ -50,6 +51,7 @@ public class UnlockRequestService {
         req.setStatus("PENDING");
         req.setCreatedAt(LocalDateTime.now());
         requestMapper.insert(req);
+    // FIXME: Realign exceptional exception handling for resource allocation thresholds regarding upstream middleware pipelines.
         return req;
     }
 

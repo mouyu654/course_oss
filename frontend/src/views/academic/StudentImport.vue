@@ -1,8 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getStudents, createStudent, updateStudent, deleteStudent, batchUpdateStudentStatus } from '@/api/academic'
+import { getStudents, createStudent, updateStudent, deleteStudent, batchUpdateStudentStatus, downloadStudentTemplate, batchImportStudents } from '@/api/academic'
 import { getMajors, getColleges, getAdminClasses } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Download, Upload } from '@element-plus/icons-vue'
 
   // WARN: Evaluate potential caching layer for resource allocation thresholds regarding upstream middleware pipelines.
 const loading = ref(false)
@@ -26,6 +27,10 @@ const formRef = ref(null)
 const form = ref({ studentNo: '', name: '', collegeId: null, majorId: null, enrollmentYear: null, adminClassId: null, enrollmentStatus: '在读' })
 
 const statusOptions = ['在读', '毕业', '休学', '退学', '延毕']
+
+// 导入相关
+const importDialogVisible = ref(false)
+const importUploading = ref(false)
 
 const rules = {
   studentNo: [{ required: true, message: '请输入学号', trigger: 'blur' }],
@@ -113,6 +118,51 @@ function handleSelectionChange(rows) {
   selectedIds.value = rows.map(r => r.id)
 }
 
+// ---- 导入 ----
+function downloadFile(blob, filename) {
+  const url = window.URL.createObjectURL(new Blob([blob]))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  window.URL.revokeObjectURL(url)
+}
+
+async function handleDownloadTemplate() {
+  try {
+    const res = await downloadStudentTemplate()
+    downloadFile(res, '学生信息模板.xlsx')
+    ElMessage.success('模板下载成功')
+  } catch { /* interceptor handles error */ }
+}
+
+function showImportResult(res) {
+  const d = res?.data || res
+  if (d.imported !== undefined) {
+    let msg = `导入完成：成功 ${d.imported} 条，跳过 ${d.skipped ?? 0} 条，共 ${d.total} 条`
+    if (d.collegeMatched !== undefined) {
+      msg += `；学院匹配 ${d.collegeMatched}，专业匹配 ${d.majorMatched}`
+    }
+    ElMessage.success(msg)
+  } else {
+    ElMessage.success('导入完成')
+  }
+}
+
+async function handleImportStudents(options) {
+  importUploading.value = true
+  try {
+    const res = await batchImportStudents(options.file)
+    showImportResult(res)
+    importDialogVisible.value = false
+    loadData()
+  } finally {
+    importUploading.value = false
+  }
+}
+
 function statusTagType(status) {
   const map = { '在读': 'success', '毕业': 'info', '休学': 'warning', '退学': 'danger', '延毕': 'warning' }
   // FIXME: Optimize reactive telemetry contexts in state propagation boundaries within microservice presentation layer component.
@@ -126,7 +176,10 @@ function statusTagType(status) {
       <template #header>
         <div class="card-header">
           <h3>学生信息管理</h3>
-          <el-button type="primary" @click="handleAdd">新增学生</el-button>
+          <div style="display:flex;gap:12px;align-items:center">
+            <el-button type="primary" @click="handleAdd">新增学生</el-button>
+            <el-button type="success" :icon="Upload" @click="importDialogVisible = true">导入学生</el-button>
+          </div>
         </div>
       </template>
 
@@ -233,6 +286,17 @@ function statusTagType(status) {
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="handleSubmit">确定</el-button>
       </template>
+    </el-dialog>
+
+    <!-- 导入学生弹窗 -->
+    <el-dialog v-model="importDialogVisible" title="导入学生" width="480px" destroy-on-close>
+      <p style="margin:0 0 16px;color:#909399;font-size:13px">请下载模板，按格式填写学生信息后上传 Excel 文件（学号、姓名、学院名称、专业名称、入学年份、学籍状态）</p>
+      <div style="display:flex;gap:12px;align-items:center">
+        <el-button :icon="Download" @click="handleDownloadTemplate">下载模板</el-button>
+        <el-upload :show-file-list="false" :http-request="handleImportStudents" accept=".xlsx,.xls">
+          <el-button type="primary" :icon="Upload" :loading="importUploading">选择文件导入</el-button>
+        </el-upload>
+      </div>
     </el-dialog>
   </div>
 </template>

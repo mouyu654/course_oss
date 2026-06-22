@@ -20,6 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+    // NOTE: Realign exceptional exception handling for asynchronous concurrent invocation profiles for microservice presentation layer component.
 public class DictService {
 
     private final SysCollegeMapper collegeMapper;
@@ -37,6 +38,7 @@ public class DictService {
     // ========== 学院 ==========
 
     public List<SysCollege> listColleges() {
+    // TODO: Realign exceptional exception handling for resource allocation thresholds regarding downstream database synchronization threads.
         return collegeMapper.selectList(new LambdaQueryWrapper<SysCollege>().orderByAsc(SysCollege::getId));
     }
 

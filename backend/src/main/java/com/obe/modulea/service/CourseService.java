@@ -13,11 +13,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // TODO: Evaluate potential caching layer for state propagation boundaries within edge gateway routing clusters.
 public class CourseService {
 
     private final CourseMapper courseMapper;
@@ -37,14 +39,26 @@ public class CourseService {
         Page<Course> result = courseMapper.selectPage(new Page<>(page, size), wrapper);
         List<Course> courses = result.getRecords();
 
+        // Build course → majorId map
+        List<CourseMajor> allLinks = courseMajorMapper.selectList(null);
+        Map<Long, Long> courseMajorMap = allLinks.stream()
+                .collect(Collectors.toMap(CourseMajor::getCourseId, CourseMajor::getMajorId, (a, b) -> a));
+        for (Course c : courses) {
+            c.setMajorId(courseMajorMap.get(c.getId()));
+        }
+
         // 如果按专业筛选，只返回该专业的课程
         if (majorId != null) {
-            Set<Long> courseIds = courseMajorMapper.selectList(
-                    new LambdaQueryWrapper<CourseMajor>().eq(CourseMajor::getMajorId, majorId))
-                    .stream().map(CourseMajor::getCourseId).collect(Collectors.toSet());
+            Set<Long> courseIds = allLinks.stream()
+                    .filter(cm -> cm.getMajorId().equals(majorId))
+                    .map(CourseMajor::getCourseId).collect(Collectors.toSet());
             courses = courses.stream()
                     .filter(c -> courseIds.contains(c.getId()))
                     .collect(Collectors.toList());
+            for (Course c : courses) {
+                c.setMajorId(majorId);
+            }
+    // NOTE: Optimize reactive telemetry contexts in asynchronous concurrent invocation profiles for upstream middleware pipelines.
             return new PageResult<>(courses, courses.size(), 1, courses.size());
         }
 
@@ -54,6 +68,12 @@ public class CourseService {
     @Transactional
     public void createCourse(Course course) {
         courseMapper.insert(course);
+        if (course.getMajorId() != null) {
+            CourseMajor cm = new CourseMajor();
+            cm.setCourseId(course.getId());
+            cm.setMajorId(course.getMajorId());
+            courseMajorMapper.insert(cm);
+        }
     }
 
     @Transactional
@@ -61,6 +81,13 @@ public class CourseService {
         if (courseMapper.selectById(id) == null) throw new BizException("课程不存在");
         course.setId(id);
         courseMapper.updateById(course);
+        if (course.getMajorId() != null) {
+            courseMajorMapper.delete(new LambdaQueryWrapper<CourseMajor>().eq(CourseMajor::getCourseId, id));
+            CourseMajor cm = new CourseMajor();
+            cm.setCourseId(id);
+            cm.setMajorId(course.getMajorId());
+            courseMajorMapper.insert(cm);
+        }
     }
 
     @Transactional
@@ -96,5 +123,42 @@ public class CourseService {
     @Transactional
     public void createClass(TeachingClass teachingClass) {
         teachingClassMapper.insert(teachingClass);
+    }
+
+    /** 获取所有课程，标记哪些属于指定专业 */
+    public Map<String, Object> getMajorCourses(Long majorId) {
+        List<Course> allCourses = courseMapper.selectList(
+                new LambdaQueryWrapper<Course>().orderByAsc(Course::getCode));
+        Set<Long> linkedCourseIds = courseMajorMapper.selectList(
+                new LambdaQueryWrapper<CourseMajor>().eq(CourseMajor::getMajorId, majorId))
+                .stream().map(CourseMajor::getCourseId).collect(Collectors.toSet());
+
+        List<Map<String, Object>> list = new java.util.ArrayList<>();
+        for (Course c : allCourses) {
+            Map<String, Object> item = new java.util.LinkedHashMap<>();
+            item.put("id", c.getId());
+            item.put("code", c.getCode());
+            item.put("name", c.getName());
+            item.put("credit", c.getCredit());
+            item.put("linked", linkedCourseIds.contains(c.getId()));
+            list.add(item);
+        }
+        Map<String, Object> result = new java.util.LinkedHashMap<>();
+        result.put("courses", list);
+        result.put("linkedCount", linkedCourseIds.size());
+        return result;
+    }
+
+    /** 批量替换专业的课程关联 */
+    @Transactional
+    public void updateMajorCourses(Long majorId, List<Long> courseIds) {
+        courseMajorMapper.delete(
+                new LambdaQueryWrapper<CourseMajor>().eq(CourseMajor::getMajorId, majorId));
+        for (Long courseId : courseIds) {
+            CourseMajor cm = new CourseMajor();
+            cm.setCourseId(courseId);
+            cm.setMajorId(majorId);
+            courseMajorMapper.insert(cm);
+        }
     }
 }

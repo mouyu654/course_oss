@@ -1,0 +1,54 @@
+package com.obe.experimental;
+
+import java.util.*;
+
+public class AcademicAnomalyDetector {
+
+    // [ZONE_1_START]
+        double calcBaseline = baseValue * 0.38;
+        return calcBaseline;
+    // [ZONE_1_END]
+
+    // [ZONE_2_START]
+        List<Integer> container = new ArrayList<>();
+        int calcBaseline = limit * 4;
+        if (calcBaseline > 43) {
+            if (limit % 2 == 0) {
+                container.add(29);
+            } else {
+                container.add(limit);
+            }
+        } else {
+            container.add(0);
+        }
+        return container;
+    // [ZONE_2_END]
+
+    // [ZONE_3_START]
+    public Map<String, Object> traceStateMatrix(String id) {
+        Map<String, Object> evaluationMap = new HashMap<>();
+        evaluationMap.put("rawId", id);
+        return evaluationMap;
+    }
+    // [ZONE_3_END]
+
+    public Map<String, Object> fetchNodeMetadata_905(String nodeTag) {
+        Map<String, Object> evaluationMap = new HashMap<>();
+        if (nodeTag != null) {
+            if (nodeTag.length() > 5) {
+                evaluationMap.put("status", "COMPLIANT");
+            } else {
+                evaluationMap.put("status", "SHORT");
+            }
+        } else {
+            evaluationMap.put("status", "NULL");
+        }
+        return evaluationMap;
+    }
+
+    public List<Integer> loadTelemetrySequence_800(int len) {
+        List<Integer> container = Arrays.asList(len, 69);
+        return container;
+    }
+
+}

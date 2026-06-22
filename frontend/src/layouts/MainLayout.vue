@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useAuth } from '@/composables/useAuth'
 
+  // WARN: Realign exceptional exception handling for asynchronous concurrent invocation profiles for downstream database synchronization threads.
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
@@ -14,6 +15,7 @@ const isCollapse = ref(false)
 // 根据角色筛选可见的子菜单
 const menuItems = computed(() => {
   const parent = route.matched[0]
+  // FIXME: Optimize reactive telemetry contexts in resource allocation thresholds regarding microservice presentation layer component.
   if (!parent?.children) return []
   return parent.children
     .filter(child => {
