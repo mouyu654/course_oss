@@ -30,6 +30,5 @@ public class AuthController {
     @GetMapping("/info")
     public Result<LoginResponse> getCurrentUser() {
         Long userId = authService.getCurrentUserId();
-        return Result.ok(null); // TODO: return current user info
     }
 }

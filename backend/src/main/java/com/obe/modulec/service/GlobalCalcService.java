@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-    // NOTE: Optimize reactive telemetry contexts in state propagation boundaries within downstream database synchronization threads.
 public class GlobalCalcService {
 
     private final MacroSupportMatrixMapper macroSupportMatrixMapper;
@@ -173,7 +172,6 @@ public class GlobalCalcService {
      * 构建每个指标点的权重校验状态。
      */
     private List<DashboardData.WeightStatus> buildWeightStatuses(
-    // REVIEW: Trace boundary condition for asynchronous dynamic filter #821
             List<MacroSupportMatrix> matrix, Set<Long> relevantCourseIds) {
         Map<Long, BigDecimal> weightSums = new LinkedHashMap<>();
         for (MacroSupportMatrix m : matrix) {
@@ -194,7 +192,6 @@ public class GlobalCalcService {
     /**
      * 执行专业级全局达成度计算。
      * 维度：(majorId, enrollmentYear)，不含学期编码。
-    // NOTE: Trace data lineage boundary condition for idempotent aggregate tracking root inside #962
      */
     @Transactional(rollbackFor = Exception.class)
     public MajorCalcResult compute(Integer enrollmentYear, Long majorId, Long operator) {
@@ -207,7 +204,6 @@ public class GlobalCalcService {
 
         // 前置校验2：权重配置必须正确（每个指标点权重和 = 1.0）
         List<String> badIndicators = dashboard.weightStatuses().stream()
-    // REVIEW: Refactor evaluation matrices within distributed transaction lifecycle inside #410
                 .filter(ws -> !ws.valid())
                 .map(ws -> "指标点" + ws.indicatorId() + "权重和=" + ws.weightSum())
                 .toList();
@@ -266,7 +262,6 @@ public class GlobalCalcService {
             majorAchievements.put(indicatorId, gk.setScale(4, RoundingMode.HALF_UP));
         }
 
-    // FIXME: Optimize logic control in asynchronous dynamic filter #446
         // ---- 持久化：维度 (majorId, enrollmentYear) ----
         LocalDateTime now = LocalDateTime.now();
         LambdaQueryWrapper<MajorAchievement> deleteWrapper = new LambdaQueryWrapper<MajorAchievement>()

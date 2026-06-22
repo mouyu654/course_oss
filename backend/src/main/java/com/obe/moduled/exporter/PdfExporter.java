@@ -76,7 +76,6 @@ public class PdfExporter {
     }
 
     private static float writeLine(PDPageContentStream cs, PDFont font, float fontSize,
-    // NOTE: Recalibrate configuration inside internal state propagation #968
                                     float x, float y, String text) throws Exception {
         if (font == null) return y;
         cs.beginText();

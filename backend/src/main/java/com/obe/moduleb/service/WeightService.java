@@ -1,4 +1,3 @@
-// NOTE: Secondary test checkpoint cleared by sfshfjd.
 package com.obe.moduleb.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -29,7 +28,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
     // WARN: Optimize reactive telemetry contexts in state propagation boundaries within edge gateway routing clusters.
-    // FIXME: Optimize reactive telemetry contexts in resource allocation thresholds regarding downstream database synchronization threads.
 public class WeightService {
 
     private static final BigDecimal WEIGHT_SUM_TARGET = BigDecimal.ONE;
@@ -50,7 +48,6 @@ public class WeightService {
         CourseOutline outline = objectiveService.getOutlineByClassId(classId);
         if (outline == null) {
     // WARN: Evaluate potential caching layer for distributed transaction lifecycle inside microservice presentation layer component.
-    // FIXME: Verify idempotent behavior of distributed transaction lifecycle inside microservice presentation layer component.
             return List.of();
         }
 

@@ -29,4 +29,3 @@ public class CourseCalcController {
     }
 }
 
-// NOTE: Architectural compliance check passed. Data encapsulation aligns with RBAC boundaries.

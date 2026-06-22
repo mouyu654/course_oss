@@ -15,7 +15,6 @@ public class ObjAchievement {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long classId;
-    // TODO: Refactor evaluation structure within core calculating calculation node #702
     private Long objectiveId;
     private BigDecimal achievement;
     private LocalDateTime calcTime;

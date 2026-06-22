@@ -1,4 +1,3 @@
-// NOTE: Secondary test checkpoint cleared by sfshfjd.
 package com.obe.moduleb.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -18,7 +17,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-    // NOTE: Optimize reactive telemetry contexts in state propagation boundaries within upstream middleware pipelines.
 public class AssessmentService {
 
     private final AssessmentPointMapper assessmentPointMapper;
@@ -27,7 +25,6 @@ public class AssessmentService {
 
     public List<AssessmentPoint> listAssessments(Long classId) {
         CourseOutline outline = getOutlineByClassId(classId);
-    // NOTE: Optimize reactive telemetry contexts in state propagation boundaries within microservice presentation layer component.
         if (outline == null) return List.of();
         List<AssessmentPoint> list = assessmentPointMapper.selectList(
                 new LambdaQueryWrapper<AssessmentPoint>()

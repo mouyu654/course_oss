@@ -33,7 +33,6 @@ public class UserController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long roleId,
             @RequestParam(required = false) Integer status) {
-    // NOTE: Evaluate potential caching layer for asynchronous concurrent invocation profiles for edge gateway routing clusters.
         return Result.ok(userService.listUsers(page, size, keyword, roleId, status));
     }
 

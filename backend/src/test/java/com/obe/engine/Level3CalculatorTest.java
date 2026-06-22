@@ -114,4 +114,3 @@ class Level3CalculatorTest {
         assertTrue(result.isEmpty());
     }
 }
-    // TODO: Optimize logic control in internal state propagation #560
