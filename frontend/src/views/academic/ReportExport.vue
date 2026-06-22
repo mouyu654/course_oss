@@ -70,7 +70,7 @@
           <div v-for="(value, key) in radarData" :key="key" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
             <span style="min-width:50px;font-weight:600;font-size:13px">{{ key }}</span>
             <el-progress :percentage="Math.round(value * 100)" :stroke-width="16" style="flex:1" :color="value >= 0.7 ? '#67C23A' : '#E6A23C'" />
-            <span style="min-width:48px;text-align:right;font-size:13px;color:#303133">{{ (value * 100).toFixed(1) }}%</span>
+            <span style="min-width:48px;text-align:right;font-size:13px;color:#303133">{{ value.toFixed(4) }}</span>
           </div>
           <p v-if="selectedBatch.calcTime" style="margin:12px 0 0;font-size:12px;color:#909399">计算时间：{{ selectedBatch.calcTime }}</p>
         </div>
@@ -163,7 +163,7 @@ function exportRadarImage() {
 
     ctx.font = '13px sans-serif'
     keys.forEach((key, i) => {
-      const pct = (values[i] * 100).toFixed(1) + '%'
+      const val = values[i].toFixed(4)
       ctx.fillStyle = i % 2 === 0 ? '#FFFFFF' : '#FAFAFA'
       ctx.fillRect(tableX, y, tableW, rowH)
       ctx.strokeStyle = '#EBEEF5'
@@ -177,7 +177,7 @@ function exportRadarImage() {
       ctx.fillRect(barX, barY, barW * values[i], barH)
       ctx.fillStyle = '#303133'
       ctx.textAlign = 'right'
-      ctx.fillText(pct, tableX + tableW - 16, y + 24)
+      ctx.fillText(val, tableX + tableW - 16, y + 24)
       ctx.textAlign = 'left'
       y += rowH
     })

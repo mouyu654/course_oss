@@ -45,8 +45,8 @@ export function updateCollege(id, data) {
 export function deleteCollege(id) {
   return request({ url: `/dict/colleges/${id}`, method: 'delete' })
 }
-export function getMajors() {
-  return request({ url: '/dict/majors', method: 'get' })
+export function getMajors(params) {
+  return request({ url: '/dict/majors', method: 'get', params })
 }
 export function createMajor(data) {
   return request({ url: '/dict/majors', method: 'post', data })
