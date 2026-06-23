@@ -23,11 +23,18 @@
 
       <el-alert v-if="scoreStatus === 'LOCKED'" title="成绩已锁定，无法修改。如需勘误请联系管理员解锁。" type="warning" show-icon :closable="false" style="margin-bottom:16px" />
 
-      <div v-if="previewData" style="overflow-x:auto">
-        <el-table :data="previewData.rows" v-loading="loadingScores" stripe border size="small" max-height="500" style="width:100%">
-          <el-table-column prop="studentNo" label="学号" width="120" fixed />
-          <el-table-column prop="studentName" label="姓名" width="100" fixed />
-          <el-table-column v-for="h in previewData.headers" :key="h.id" :label="`${h.name} (${h.maxScore})`" min-width="110" align="center">
+      <div v-if="previewData" class="data-grid-wrapper" @mouseleave="clearCrosshair">
+        <el-table
+          :data="previewData.rows" v-loading="loadingScores" stripe border size="small"
+          max-height="500" style="width:100%"
+          :row-class-name="rowClassName"
+          @cell-mouse-enter="onCellEnter" @cell-mouse-leave="onCellLeave"
+        >
+          <el-table-column prop="studentNo" label="学号" width="120" fixed :class-name="colClassName(0)" />
+          <el-table-column prop="studentName" label="姓名" width="100" fixed :class-name="colClassName(1)" />
+          <el-table-column v-for="(h, idx) in previewData.headers" :key="h.id"
+            :label="`${h.name} (${h.maxScore})`" min-width="110" align="center"
+            :class-name="colClassName(idx + 2)">
             <template #default="{ row }">
               <span :class="{ 'cell-null': getCellScore(row, h.id) === null }">
                 {{ getCellScore(row, h.id) ?? '缺失' }}
@@ -44,6 +51,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { Download, Upload, Refresh } from '@element-plus/icons-vue'
 import { getMyClasses, downloadScoreTemplate, uploadScores, getScores, getScoreStatus } from '@/api/teacher'
 import { ElMessage } from 'element-plus'
@@ -55,6 +63,14 @@ const downloading = ref(false)
 const uploading = ref(false)
 const previewData = ref(null)
 const scoreStatus = ref('')
+const crossRow = ref(-1)
+const crossCol = ref(-1)
+
+function onCellEnter(row, col) { crossRow.value = previewData.value.rows.indexOf(row); crossCol.value = col.getColIndex() }
+function onCellLeave() { crossRow.value = -1; crossCol.value = -1 }
+function clearCrosshair() { crossRow.value = -1; crossCol.value = -1 }
+function rowClassName({rowIndex}) { return rowIndex === crossRow.value ? 'cross-row' : '' }
+function colClassName(idx) { return idx === crossCol.value ? 'cross-col' : '' }
 
 const statusTagType = computed(() => {
   const map = { EMPTY: 'info', IMPORTED: 'warning', LOCKED: 'success' }
@@ -66,9 +82,14 @@ const statusLabel = computed(() => {
 })
 
 onMounted(async () => {
+  const route = useRoute()
   const res = await getMyClasses()
   myClasses.value = res.data || res || []
-  if (myClasses.value.length) selectedClassId.value = myClasses.value[0].id
+  if (myClasses.value.length) {
+    const cid = parseInt(route.params.courseId)
+    const match = cid ? myClasses.value.find(c => c.id === cid || c.courseId === cid) : null
+    selectedClassId.value = match ? match.id : myClasses.value[0].id
+  }
 })
 
 watch(selectedClassId, (v) => { if (v) loadScores() })
@@ -97,6 +118,7 @@ async function loadScores() {
     ])
     previewData.value = scores?.data || scores
     scoreStatus.value = status?.data?.status || status?.status || scores?.data?.status || scores?.status || 'EMPTY'
+    ElMessage.success('刷新成功')
   } catch {
     previewData.value = null
     scoreStatus.value = ''
@@ -137,6 +159,16 @@ async function handleUpload(file) {
 }
 </script>
 
+<style>
+/* Crosshair - deep styles needed to override el-table internals */
+.data-grid-wrapper .el-table .cross-row > td { background-color: #ecf5ff !important; }
+.data-grid-wrapper .el-table .cross-col { background-color: #ecf5ff !important; }
+.data-grid-wrapper .el-table th.cross-col { background-color: #d9ecff !important; }
+.data-grid-wrapper .el-table .cross-row > td.cross-col { background-color: #c6e2ff !important; }
+.data-grid-wrapper .el-table .el-table__fixed .cross-row > td { background-color: #ecf5ff !important; }
+.data-grid-wrapper .el-table .el-table__fixed .cross-col { background-color: #ecf5ff !important; }
+</style>
 <style scoped>
 .cell-null { color: #e6a23c; font-style: italic; }
+.data-grid-wrapper :deep(.el-table__header-wrapper th) { position: sticky; top: 0; z-index: 3; background: #f5f7fa; }
 </style>

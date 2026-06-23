@@ -94,6 +94,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import { DataAnalysis, Download } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/user'
@@ -135,9 +136,15 @@ const overallPassRate = computed(() => {
 })
 
 onMounted(async () => {
+  const route = useRoute()
   const res = await getMyClasses()
   myClasses.value = res.data || res || []
-  if (myClasses.value.length) selectedClassId.value = myClasses.value[0].id
+  if (myClasses.value.length) {
+    // Auto-select by courseId from route, otherwise first class
+    const cid = parseInt(route.params.courseId)
+    const match = cid ? myClasses.value.find(c => c.id === cid || c.courseId === cid) : null
+    selectedClassId.value = match ? match.id : myClasses.value[0].id
+  }
   resizeHandler = () => chartInstance?.resize()
   window.addEventListener('resize', resizeHandler)
 })
