@@ -177,17 +177,17 @@ function toggleFullscreen() {
         </div>
 
         <div class="header-right">
-          <div class="header-search">
-            <el-icon class="search-icon" :size="18"><Search /></el-icon>
-            <input type="text" placeholder="搜索功能..." class="search-input" />
-            <span class="search-shortcut">⌘K</span>
-          </div>
+<!--          <div class="header-search">-->
+<!--            <el-icon class="search-icon" :size="18"><Search /></el-icon>-->
+<!--            <input type="text" placeholder="搜索功能..." class="search-input" />-->
+<!--            <span class="search-shortcut">⌘K</span>-->
+<!--          </div>-->
 
-          <el-badge :value="3" :max="99" class="notification-badge">
-            <div class="icon-btn">
-              <el-icon :size="22"><Bell /></el-icon>
-            </div>
-          </el-badge>
+<!--          <el-badge :value="3" :max="99" class="notification-badge">-->
+<!--            <div class="icon-btn">-->
+<!--              <el-icon :size="22"><Bell /></el-icon>-->
+<!--            </div>-->
+<!--          </el-badge>-->
 
           <div class="icon-btn" @click="toggleFullscreen">
             <el-icon :size="22"><FullScreen /></el-icon>
