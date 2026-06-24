@@ -115,7 +115,7 @@ async function handleLogin() {
         </el-form>
 
         <div class="form-footer">
-          <p class="copyright">© 2024 OBE 达成度计算平台</p>
+          <p class="copyright">© 2026 OBE 达成度计算平台</p>
         </div>
       </div>
     </div>
