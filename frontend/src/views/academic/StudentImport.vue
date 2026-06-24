@@ -3,9 +3,8 @@ import { ref, onMounted } from 'vue'
 import { getStudents, createStudent, updateStudent, deleteStudent, batchUpdateStudentStatus, downloadStudentTemplate, batchImportStudents } from '@/api/academic'
 import { getMajors, getColleges, getAdminClasses } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Download, Upload } from '@element-plus/icons-vue'
+import { Download, Upload, Plus, Search, RefreshRight } from '@element-plus/icons-vue'
 
-  // WARN: Evaluate potential caching layer for resource allocation thresholds regarding upstream middleware pipelines.
 const loading = ref(false)
 const tableData = ref([])
 const total = ref(0)
@@ -171,77 +170,130 @@ function statusTagType(status) {
 
 <template>
   <div class="page-container">
-    <el-card>
+    <el-card class="main-card">
       <template #header>
-        <div class="card-header">
-          <h3>学生信息管理</h3>
-          <div style="display:flex;gap:12px;align-items:center">
-            <el-button type="primary" @click="handleAdd">新增学生</el-button>
-            <el-button type="success" :icon="Upload" @click="importDialogVisible = true">导入学生</el-button>
+        <div class="page-header">
+          <div class="header-left">
+            <div class="header-accent" style="background: linear-gradient(180deg, #7C3AED 0%, #8B5CF6 100%);"></div>
+            <div class="header-content">
+              <h3 class="header-title">学生信息管理</h3>
+              <p class="header-subtitle">管理学生信息，支持批量导入和状态更新</p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <div class="action-buttons">
+              <el-button type="primary" @click="handleAdd">
+                <el-icon><Plus /></el-icon>
+                新增学生
+              </el-button>
+              <el-button type="success" @click="importDialogVisible = true">
+                <el-icon><Upload /></el-icon>
+                导入学生
+              </el-button>
+            </div>
           </div>
         </div>
       </template>
 
       <!-- 查询条件 -->
-      <el-form :inline="true" style="margin-bottom:16px" @submit.prevent="handleSearch">
-        <el-form-item label="关键词">
-          <el-input v-model="filters.keyword" placeholder="学号/姓名" clearable style="width:150px" />
-        </el-form-item>
-        <el-form-item label="学院">
-          <el-select v-model="filters.collegeId" placeholder="全部" clearable style="width:150px">
-            <el-option v-for="c in colleges" :key="c.id" :label="c.name" :value="c.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="专业">
-          <el-select v-model="filters.majorId" placeholder="全部" clearable filterable style="width:160px">
-            <el-option v-for="m in majors" :key="m.id" :label="m.name" :value="m.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="学籍状态">
-          <el-select v-model="filters.enrollmentStatus" placeholder="全部" clearable style="width:110px">
-            <el-option v-for="s in statusOptions" :key="s" :label="s" :value="s" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="入学年份">
-          <el-input-number v-model="filters.enrollmentYear" :min="2000" :max="2030" controls-position="right" style="width:120px" />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
+      <div class="filter-section">
+        <el-form :inline="true" @submit.prevent="handleSearch" class="filter-form">
+          <el-form-item label="关键词">
+            <el-input v-model="filters.keyword" placeholder="学号/姓名" clearable class="filter-input">
+              <template #prefix>
+                <el-icon><Search /></el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
+          <el-form-item label="学院">
+            <el-select v-model="filters.collegeId" placeholder="全部" clearable class="filter-select">
+              <el-option v-for="c in colleges" :key="c.id" :label="c.name" :value="c.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="专业">
+            <el-select v-model="filters.majorId" placeholder="全部" clearable filterable class="filter-select">
+              <el-option v-for="m in majors" :key="m.id" :label="m.name" :value="m.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="学籍状态">
+            <el-select v-model="filters.enrollmentStatus" placeholder="全部" clearable class="filter-select-small">
+              <el-option v-for="s in statusOptions" :key="s" :label="s" :value="s" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="入学年份">
+            <el-input-number v-model="filters.enrollmentYear" :min="2000" :max="2030" controls-position="right" class="filter-number" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>
+              查询
+            </el-button>
+            <el-button @click="handleReset">
+              <el-icon><RefreshRight /></el-icon>
+              重置
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </div>
 
       <!-- 批量操作 -->
-      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
-        <span style="font-size:13px;color:#606266">已选 {{ selectedIds.length }} 项</span>
-        <el-select v-model="batchStatus" style="width:110px" size="small">
-          <el-option v-for="s in statusOptions" :key="s" :label="s" :value="s" />
-        </el-select>
-        <el-button size="small" type="warning" :disabled="!selectedIds.length" @click="handleBatchUpdate">批量更新状态</el-button>
+      <div class="batch-bar" v-if="selectedIds.length > 0">
+        <div class="batch-info">
+          <el-icon><InfoFilled /></el-icon>
+          <span>已选 <strong>{{ selectedIds.length }}</strong> 项</span>
+        </div>
+        <div class="batch-actions">
+          <el-select v-model="batchStatus" class="batch-select">
+            <el-option v-for="s in statusOptions" :key="s" :label="s" :value="s" />
+          </el-select>
+          <el-button type="warning" @click="handleBatchUpdate">
+            批量更新状态
+          </el-button>
+        </div>
       </div>
 
       <!-- 数据表格 -->
-      <el-table :data="tableData" v-loading="loading" stripe style="width:100%" @selection-change="handleSelectionChange">
+      <el-table :data="tableData" v-loading="loading" stripe class="data-table" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="50" align="center" />
-        <el-table-column prop="studentNo" label="学号" min-width="120" />
-        <el-table-column prop="name" label="姓名" min-width="90" />
+        <el-table-column prop="studentNo" label="学号" min-width="120" align="center">
+          <template #default="{ row }">
+            <span class="student-no">{{ row.studentNo }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="name" label="姓名" min-width="90">
+          <template #default="{ row }">
+            <span class="student-name">{{ row.name }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="collegeName" label="学院" min-width="180" show-overflow-tooltip />
         <el-table-column prop="majorName" label="专业" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="enrollmentYear" label="入学年份" width="100" align="center" />
+        <el-table-column prop="enrollmentYear" label="入学年份" width="100" align="center">
+          <template #default="{ row }">
+            <span class="year-text">{{ row.enrollmentYear }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="学籍状态" width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="statusTagType(row.enrollmentStatus)" size="small">{{ row.enrollmentStatus || '在读' }}</el-tag>
+            <el-tag :type="statusTagType(row.enrollmentStatus)" size="small" effect="dark" class="status-tag">
+              {{ row.enrollmentStatus || '在读' }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="140" align="center" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button link type="primary" @click="handleEdit(row)">
+              <el-icon><Edit /></el-icon>
+              编辑
+            </el-button>
+            <el-button link type="danger" @click="handleDelete(row)">
+              <el-icon><Delete /></el-icon>
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
 
-      <div style="margin-top:16px;text-align:right">
+      <div class="pagination-wrapper">
         <el-pagination v-model:current-page="page" v-model:page-size="size" :total="total"
           :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next, jumper"
           @current-change="handlePageChange" @size-change="handleSizeChange" />
@@ -249,7 +301,7 @@ function statusTagType(status) {
     </el-card>
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑学生' : '新增学生'" width="520px" destroy-on-close>
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑学生' : '新增学生'" width="520px" destroy-on-close class="custom-dialog">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="学号" prop="studentNo">
           <el-input v-model="form.studentNo" :disabled="isEdit" placeholder="请输入学号" />
@@ -288,14 +340,309 @@ function statusTagType(status) {
     </el-dialog>
 
     <!-- 导入学生弹窗 -->
-    <el-dialog v-model="importDialogVisible" title="导入学生" width="480px" destroy-on-close>
-      <p style="margin:0 0 16px;color:#909399;font-size:13px">请下载模板，按格式填写学生信息后上传 Excel 文件（学号、姓名、学院名称、专业名称、入学年份、学籍状态）</p>
-      <div style="display:flex;gap:12px;align-items:center">
-        <el-button :icon="Download" @click="handleDownloadTemplate">下载模板</el-button>
-        <el-upload :show-file-list="false" :http-request="handleImportStudents" accept=".xlsx,.xls">
-          <el-button type="primary" :icon="Upload" :loading="importUploading">选择文件导入</el-button>
-        </el-upload>
+    <el-dialog v-model="importDialogVisible" title="导入学生" width="480px" destroy-on-close class="custom-dialog">
+      <div class="import-content">
+        <p class="import-hint">请下载模板，按格式填写学生信息后上传 Excel 文件</p>
+        <p class="import-hint-small">支持字段：学号、姓名、学院名称、专业名称、入学年份、学籍状态</p>
+        <div class="import-actions">
+          <el-button @click="handleDownloadTemplate">
+            <el-icon><Download /></el-icon>
+            下载模板
+          </el-button>
+          <el-upload :show-file-list="false" :http-request="handleImportStudents" accept=".xlsx,.xls">
+            <el-button type="primary" :loading="importUploading">
+              <el-icon><Upload /></el-icon>
+              选择文件导入
+            </el-button>
+          </el-upload>
+        </div>
       </div>
     </el-dialog>
   </div>
 </template>
+
+<style scoped>
+/* ===== Page Header ===== */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 4px 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.header-accent {
+  width: 4px;
+  height: 48px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1E293B;
+  line-height: 1.3;
+}
+
+.header-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #64748B;
+  line-height: 1.5;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* ===== Filter Section ===== */
+.filter-section {
+  background: #F8FAFC;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #F1F5F9;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-bottom: 0;
+}
+
+.filter-input {
+  width: 180px;
+}
+
+.filter-select {
+  width: 150px;
+}
+
+.filter-select-small {
+  width: 110px;
+}
+
+.filter-number {
+  width: 120px;
+}
+
+/* ===== Batch Bar ===== */
+.batch-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  border: 1px solid #FCD34D;
+  border-radius: 10px;
+  padding: 12px 20px;
+  margin-bottom: 16px;
+}
+
+.batch-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #92400E;
+  font-size: 14px;
+}
+
+.batch-info strong {
+  font-weight: 700;
+}
+
+.batch-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.batch-select {
+  width: 110px;
+}
+
+/* ===== Card Styles ===== */
+.main-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.main-card :deep(.el-card__header) {
+  padding: 20px 24px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.main-card :deep(.el-card__body) {
+  padding: 24px;
+}
+
+/* ===== Table Styles ===== */
+.data-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table :deep(.el-table__header th) {
+  background: #F8FAFC;
+  color: #475569;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.data-table :deep(.el-table__row:hover > td) {
+  background: #F8FAFC !important;
+}
+
+.student-no {
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-weight: 600;
+  color: #7C3AED;
+}
+
+.student-name {
+  font-weight: 500;
+  color: #1E293B;
+}
+
+.year-text {
+  font-family: 'SF Mono', 'Consolas', monospace;
+  color: #475569;
+}
+
+.status-tag {
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* ===== Pagination ===== */
+.pagination-wrapper {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ===== Dialog Styles ===== */
+.custom-dialog :deep(.el-dialog__header) {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #F1F5F9;
+  margin: 0;
+}
+
+.custom-dialog :deep(.el-dialog__title) {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.custom-dialog :deep(.el-dialog__body) {
+  padding: 24px;
+}
+
+.custom-dialog :deep(.el-dialog__footer) {
+  padding: 16px 24px;
+  border-top: 1px solid #F1F5F9;
+}
+
+/* ===== Import Content ===== */
+.import-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.import-hint {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.import-hint-small {
+  margin: 0;
+  color: #94A3B8;
+  font-size: 13px;
+}
+
+.import-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-buttons {
+    justify-content: flex-start;
+  }
+
+  .filter-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-input,
+  .filter-select,
+  .filter-select-small,
+  .filter-number {
+    width: 100%;
+  }
+
+  .batch-bar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .batch-actions {
+    justify-content: flex-end;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .header-accent,
+  .data-table :deep(.el-table__row) {
+    transition: none;
+  }
+}
+</style>
