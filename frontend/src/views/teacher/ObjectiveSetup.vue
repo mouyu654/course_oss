@@ -127,12 +127,18 @@ async function handleFileChange(e) {
 
 <template>
   <div class="page-container">
-    <el-card>
+    <el-card class="main-card">
       <template #header>
-        <div class="card-header">
-          <h3>课程目标设定</h3>
-          <div style="display: flex; gap: 12px; align-items: center;">
-            <el-select v-model="selectedClassId" placeholder="选择教学班级" style="width: 280px;">
+        <div class="page-header">
+          <div class="header-left">
+            <div class="header-accent"></div>
+            <div class="header-content">
+              <h3 class="header-title">课程目标设定</h3>
+              <p class="header-subtitle">设定课程目标，建立知识、能力、价值三维度评估体系</p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <el-select v-model="selectedClassId" placeholder="选择教学班级" class="class-selector">
               <el-option
                 v-for="c in myClasses"
                 :key="c.id"
@@ -140,22 +146,49 @@ async function handleFileChange(e) {
                 :value="c.id"
               />
             </el-select>
-            <el-button type="primary" :disabled="!selectedClassId" @click="handleAdd">新增目标</el-button>
-            <el-button :disabled="!selectedClassId" @click="handleDownloadTemplate">下载模板</el-button>
-            <el-button type="success" :disabled="!selectedClassId" :loading="importing" @click="handleImportClick">批量导入</el-button>
-            <input ref="fileInput" type="file" accept=".xlsx" style="display:none" @change="handleFileChange" />
+            <div class="action-buttons">
+              <el-button type="primary" :disabled="!selectedClassId" @click="handleAdd">
+                <el-icon><Plus /></el-icon>
+                新增目标
+              </el-button>
+              <el-button :disabled="!selectedClassId" @click="handleDownloadTemplate">
+                <el-icon><Download /></el-icon>
+                下载模板
+              </el-button>
+              <el-button type="success" :disabled="!selectedClassId" :loading="importing" @click="handleImportClick">
+                <el-icon><Upload /></el-icon>
+                批量导入
+              </el-button>
+              <input ref="fileInput" type="file" accept=".xlsx" style="display:none" @change="handleFileChange" />
+            </div>
           </div>
         </div>
       </template>
 
-      <el-table :data="objectives" v-loading="loading" stripe>
-        <el-table-column prop="objNo" label="编号" width="100" />
-        <el-table-column prop="dimension" label="维度" width="100" />
-        <el-table-column prop="description" label="目标描述" show-overflow-tooltip />
-        <el-table-column label="操作" width="160" fixed="right">
+      <el-table :data="objectives" v-loading="loading" stripe class="data-table">
+        <el-table-column prop="objNo" label="编号" width="100" align="center">
           <template #default="{ row }">
-            <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+            <span class="obj-number">{{ row.objNo }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="dimension" label="维度" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag :type="getDimensionType(row.dimension)" effect="plain" size="small">
+              {{ row.dimension }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="description" label="目标描述" show-overflow-tooltip />
+        <el-table-column label="操作" width="160" fixed="right" align="center">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="handleEdit(row)">
+              <el-icon><Edit /></el-icon>
+              编辑
+            </el-button>
+            <el-button link type="danger" @click="handleDelete(row)">
+              <el-icon><Delete /></el-icon>
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -167,6 +200,7 @@ async function handleFileChange(e) {
       :title="isEdit ? '编辑课程目标' : '新增课程目标'"
       width="520px"
       destroy-on-close
+      class="custom-dialog"
     >
       <el-form
         ref="formRef"
@@ -204,14 +238,174 @@ async function handleFileChange(e) {
   </div>
 </template>
 
+<script>
+export default {
+  methods: {
+    getDimensionType(dimension) {
+      const map = {
+        '知识': '',
+        '能力': 'success',
+        '价值': 'warning'
+      }
+      return map[dimension] || 'info'
+    }
+  }
+}
+</script>
+
 <style scoped>
-.card-header {
+/* ===== Page Header ===== */
+.page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 4px 0;
 }
-.card-header h3 {
+
+.header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.header-accent {
+  width: 4px;
+  height: 48px;
+  background: linear-gradient(180deg, #2563EB 0%, #3B82F6 100%);
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-title {
   margin: 0;
-  font-size: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1E293B;
+  line-height: 1.3;
+}
+
+.header-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #64748B;
+  line-height: 1.5;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.class-selector {
+  width: 280px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ===== Card Styles ===== */
+.main-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.main-card :deep(.el-card__header) {
+  padding: 20px 24px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.main-card :deep(.el-card__body) {
+  padding: 24px;
+}
+
+/* ===== Table Styles ===== */
+.data-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table :deep(.el-table__header th) {
+  background: #F8FAFC;
+  color: #475569;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.data-table :deep(.el-table__row:hover > td) {
+  background: #F8FAFC !important;
+}
+
+.obj-number {
+  font-weight: 600;
+  color: #2563EB;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+/* ===== Dialog Styles ===== */
+.custom-dialog :deep(.el-dialog__header) {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #F1F5F9;
+  margin: 0;
+}
+
+.custom-dialog :deep(.el-dialog__title) {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.custom-dialog :deep(.el-dialog__body) {
+  padding: 24px;
+}
+
+.custom-dialog :deep(.el-dialog__footer) {
+  padding: 16px 24px;
+  border-top: 1px solid #F1F5F9;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .class-selector {
+    width: 100%;
+  }
+
+  .action-buttons {
+    justify-content: flex-start;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .header-accent,
+  .obj-number,
+  .data-table :deep(.el-table__row) {
+    transition: none;
+  }
 }
 </style>
