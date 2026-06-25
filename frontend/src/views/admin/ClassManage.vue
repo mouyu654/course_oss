@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { getAdminClasses, createAdminClass, updateAdminClass, deleteAdminClass, getMajors, getAdminClassStudents, addStudentToAdminClass, removeStudentFromAdminClass } from '@/api/admin'
 import { getStudents } from '@/api/academic'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus, Search, RefreshRight } from '@element-plus/icons-vue'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -175,38 +176,82 @@ defineOptions({ name: 'ClassManage' })
 
 <template>
   <div class="page-container">
-    <el-card>
+    <el-card class="main-card">
       <template #header>
-        <div class="card-header">
-          <h3>班级管理</h3>
-          <div style="display:flex;gap:12px;align-items:center">
-            <el-input v-model="searchClassName" placeholder="班级名称" clearable style="width:160px" @keyup.enter="handleSearch" />
-            <el-select v-model="searchMajor" placeholder="所属专业" clearable style="width:170px">
-              <el-option v-for="m in majors" :key="m.id" :label="m.name" :value="m.name" />
-            </el-select>
-            <el-select v-model="searchYear" placeholder="入学年份" clearable style="width:120px">
-              <el-option v-for="y in yearOptions" :key="y" :label="y" :value="y" />
-            </el-select>
-            <el-button type="primary" @click="handleSearch">查询</el-button>
-            <el-button @click="handleReset">重置</el-button>
-            <el-button type="primary" @click="handleAdd">新增班级</el-button>
+        <div class="page-header">
+          <div class="header-left">
+            <div class="header-accent" style="background: linear-gradient(180deg, #EA580C 0%, #F97316 100%);"></div>
+            <div class="header-content">
+              <h3 class="header-title">班级管理</h3>
+              <p class="header-subtitle">管理行政班级信息</p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <div class="search-box">
+              <el-input v-model="searchClassName" placeholder="班级名称" clearable class="filter-input" @keyup.enter="handleSearch">
+                <template #prefix>
+                  <el-icon><Search /></el-icon>
+                </template>
+              </el-input>
+              <el-select v-model="searchMajor" placeholder="所属专业" clearable class="filter-select">
+                <el-option v-for="m in majors" :key="m.id" :label="m.name" :value="m.name" />
+              </el-select>
+              <el-select v-model="searchYear" placeholder="入学年份" clearable class="filter-select-small">
+                <el-option v-for="y in yearOptions" :key="y" :label="y" :value="y" />
+              </el-select>
+              <el-button @click="handleReset">
+                <el-icon><RefreshRight /></el-icon>
+                重置
+              </el-button>
+            </div>
+            <el-button type="primary" @click="handleAdd">
+              <el-icon><Plus /></el-icon>
+              新增班级
+            </el-button>
           </div>
         </div>
       </template>
-      <el-table :data="pagedData" v-loading="loading" stripe style="width:100%">
-        <el-table-column prop="className" label="班级名称" min-width="200" />
-        <el-table-column prop="majorName" label="所属专业" min-width="180" />
-        <el-table-column prop="enrollmentYear" label="入学年份" width="100" align="center" />
-        <el-table-column prop="studentCount" label="学生人数" width="100" align="center" />
+
+      <el-table :data="pagedData" v-loading="loading" stripe class="data-table">
+        <el-table-column prop="className" label="班级名称" min-width="200">
+          <template #default="{ row }">
+            <span class="class-name">{{ row.className }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="majorName" label="所属专业" min-width="180">
+          <template #default="{ row }">
+            <el-tag type="info" effect="plain" size="small">{{ row.majorName }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="enrollmentYear" label="入学年份" width="100" align="center">
+          <template #default="{ row }">
+            <span class="year-text">{{ row.enrollmentYear }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="studentCount" label="学生人数" width="100" align="center">
+          <template #default="{ row }">
+            <span class="count-text">{{ row.studentCount || 0 }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="220" align="center" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="handleEdit(row)">修改</el-button>
-            <el-button link type="success" @click="handleManageStudents(row)">学生管理</el-button>
-            <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button link type="primary" @click="handleEdit(row)">
+              <el-icon><Edit /></el-icon>
+              修改
+            </el-button>
+            <el-button link type="success" @click="handleManageStudents(row)">
+              <el-icon><User /></el-icon>
+              学生管理
+            </el-button>
+            <el-button link type="danger" @click="handleDelete(row)">
+              <el-icon><Delete /></el-icon>
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
-      <div style="margin-top:16px">
+
+      <div class="pagination-wrapper">
         <el-pagination
           v-model:current-page="page"
           v-model:page-size="pageSize"
@@ -220,7 +265,7 @@ defineOptions({ name: 'ClassManage' })
     </el-card>
 
     <!-- 班级编辑弹窗 -->
-    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑班级' : '新增班级'" width="480px" destroy-on-close>
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑班级' : '新增班级'" width="480px" destroy-on-close class="custom-dialog">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="所属专业" prop="majorId">
           <el-select v-model="form.majorId" placeholder="请选择专业" style="width:100%">
@@ -246,8 +291,9 @@ defineOptions({ name: 'ClassManage' })
       :title="`学生管理 — ${currentClass?.className || ''}`"
       width="680px"
       destroy-on-close
+      class="custom-dialog"
     >
-      <div style="display:flex;gap:8px;margin-bottom:12px">
+      <div class="student-manage-header">
         <el-select
           v-model="addStudentId"
           filterable
@@ -255,7 +301,7 @@ defineOptions({ name: 'ClassManage' })
           placeholder="输入学号或姓名搜索学生"
           :remote-method="onAddSelect"
           @focus="onAddSelect('')"
-          style="flex:1"
+          class="student-search"
         >
           <el-option
             v-for="s in availableStudents"
@@ -264,18 +310,247 @@ defineOptions({ name: 'ClassManage' })
             :value="s.id"
           />
         </el-select>
-        <el-button type="primary" @click="handleAddStudent">添加</el-button>
+        <el-button type="primary" @click="handleAddStudent">
+          <el-icon><Plus /></el-icon>
+          添加
+        </el-button>
       </div>
 
-      <el-table :data="classStudents" v-loading="studentLoading" stripe style="width:100%" max-height="400">
-        <el-table-column prop="studentNo" label="学号" min-width="130" />
-        <el-table-column prop="name" label="姓名" min-width="100" />
+      <el-table :data="classStudents" v-loading="studentLoading" stripe class="student-table" max-height="400">
+        <el-table-column prop="studentNo" label="学号" min-width="130">
+          <template #default="{ row }">
+            <span class="student-no">{{ row.studentNo }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="name" label="姓名" min-width="100">
+          <template #default="{ row }">
+            <span class="student-name">{{ row.name }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="100" align="center">
           <template #default="{ row }">
-            <el-button link type="danger" @click="handleRemoveStudent(row)">移除</el-button>
+            <el-button link type="danger" @click="handleRemoveStudent(row)">
+              <el-icon><Delete /></el-icon>
+              移除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-dialog>
   </div>
 </template>
+
+<style scoped>
+/* ===== Page Header ===== */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 4px 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.header-accent {
+  width: 4px;
+  height: 48px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1E293B;
+  line-height: 1.3;
+}
+
+.header-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #64748B;
+  line-height: 1.5;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.search-box {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-input {
+  width: 160px;
+}
+
+.filter-select {
+  width: 170px;
+}
+
+.filter-select-small {
+  width: 120px;
+}
+
+/* ===== Card Styles ===== */
+.main-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.main-card :deep(.el-card__header) {
+  padding: 20px 24px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.main-card :deep(.el-card__body) {
+  padding: 24px;
+}
+
+/* ===== Table Styles ===== */
+.data-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table :deep(.el-table__header th) {
+  background: #F8FAFC;
+  color: #475569;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.data-table :deep(.el-table__row:hover > td) {
+  background: #F8FAFC !important;
+}
+
+.class-name {
+  font-weight: 500;
+  color: #1E293B;
+}
+
+.year-text {
+  font-family: 'SF Mono', 'Consolas', monospace;
+  color: #475569;
+}
+
+.count-text {
+  font-weight: 600;
+  color: #EA580C;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+/* ===== Student Table ===== */
+.student-manage-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.student-search {
+  flex: 1;
+}
+
+.student-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.student-table :deep(.el-table__header th) {
+  background: #F8FAFC;
+  color: #475569;
+  font-weight: 600;
+}
+
+.student-no {
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-weight: 600;
+  color: #EA580C;
+}
+
+.student-name {
+  font-weight: 500;
+  color: #1E293B;
+}
+
+/* ===== Pagination ===== */
+.pagination-wrapper {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ===== Dialog Styles ===== */
+.custom-dialog :deep(.el-dialog__header) {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #F1F5F9;
+  margin: 0;
+}
+
+.custom-dialog :deep(.el-dialog__title) {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.custom-dialog :deep(.el-dialog__body) {
+  padding: 24px;
+}
+
+.custom-dialog :deep(.el-dialog__footer) {
+  padding: 16px 24px;
+  border-top: 1px solid #F1F5F9;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    flex-wrap: wrap;
+  }
+
+  .filter-input,
+  .filter-select,
+  .filter-select-small {
+    width: 100%;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .header-accent,
+  .data-table :deep(.el-table__row) {
+    transition: none;
+  }
+}
+</style>

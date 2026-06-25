@@ -154,12 +154,18 @@ async function handleFileChange(e) {
 
 <template>
   <div class="page-container">
-    <el-card>
+    <el-card class="main-card">
       <template #header>
-        <div class="card-header">
-          <h3>考核点细分与映射</h3>
-          <div style="display: flex; gap: 12px; align-items: center;">
-            <el-select v-model="selectedClassId" placeholder="选择教学班级" style="width: 280px;">
+        <div class="page-header">
+          <div class="header-left">
+            <div class="header-accent" style="background: linear-gradient(180deg, #059669 0%, #10B981 100%);"></div>
+            <div class="header-content">
+              <h3 class="header-title">考核点细分与映射</h3>
+              <p class="header-subtitle">定义考核点并建立与课程目标的对应关系</p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <el-select v-model="selectedClassId" placeholder="选择教学班级" class="class-selector">
               <el-option
                 v-for="c in myClasses"
                 :key="c.id"
@@ -167,27 +173,67 @@ async function handleFileChange(e) {
                 :value="c.id"
               />
             </el-select>
-            <el-button type="primary" :disabled="!selectedClassId" @click="handleAdd">新增考核点</el-button>
-            <el-button :disabled="!selectedClassId" @click="handleDownloadTemplate">下载模板</el-button>
-            <el-button type="success" :disabled="!selectedClassId" :loading="importing" @click="handleImportClick">批量导入</el-button>
-            <input ref="fileInput" type="file" accept=".xlsx" style="display:none" @change="handleFileChange" />
+            <div class="action-buttons">
+              <el-button type="primary" :disabled="!selectedClassId" @click="handleAdd">
+                <el-icon><Plus /></el-icon>
+                新增考核点
+              </el-button>
+              <el-button :disabled="!selectedClassId" @click="handleDownloadTemplate">
+                <el-icon><Download /></el-icon>
+                下载模板
+              </el-button>
+              <el-button type="success" :disabled="!selectedClassId" :loading="importing" @click="handleImportClick">
+                <el-icon><Upload /></el-icon>
+                批量导入
+              </el-button>
+              <input ref="fileInput" type="file" accept=".xlsx" style="display:none" @change="handleFileChange" />
+            </div>
           </div>
         </div>
       </template>
 
-      <el-table :data="assessments" v-loading="loading" stripe>
-        <el-table-column prop="sortOrder" label="序号" width="80" align="center" />
-        <el-table-column prop="name" label="考核点名称" show-overflow-tooltip />
-        <el-table-column prop="maxScore" label="满分" width="100" align="center" />
-        <el-table-column label="绑定课程目标" width="140" align="center">
+      <el-table :data="assessments" v-loading="loading" stripe class="data-table">
+        <el-table-column prop="sortOrder" label="序号" width="80" align="center">
           <template #default="{ row }">
-            {{ objectiveLabels(row) }}
+            <span class="sort-number">{{ row.sortOrder }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="160" fixed="right">
+        <el-table-column prop="name" label="考核点名称" show-overflow-tooltip>
           <template #default="{ row }">
-            <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+            <span class="assessment-name">{{ row.name }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="maxScore" label="满分" width="100" align="center">
+          <template #default="{ row }">
+            <span class="score-value">{{ row.maxScore }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="绑定课程目标" width="140" align="center">
+          <template #default="{ row }">
+            <div class="objective-tags">
+              <el-tag
+                v-for="label in objectiveLabels(row).split(', ')"
+                :key="label"
+                size="small"
+                type="info"
+                effect="plain"
+                class="objective-tag"
+              >
+                {{ label }}
+              </el-tag>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="160" fixed="right" align="center">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="handleEdit(row)">
+              <el-icon><Edit /></el-icon>
+              编辑
+            </el-button>
+            <el-button link type="danger" @click="handleDelete(row)">
+              <el-icon><Delete /></el-icon>
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -199,6 +245,7 @@ async function handleFileChange(e) {
       :title="isEdit ? '编辑考核点' : '新增考核点'"
       width="500px"
       destroy-on-close
+      class="custom-dialog"
     >
       <el-form
         ref="formRef"
@@ -236,13 +283,179 @@ async function handleFileChange(e) {
 </template>
 
 <style scoped>
-.card-header {
+/* ===== Page Header ===== */
+.page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 4px 0;
 }
-.card-header h3 {
+
+.header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.header-accent {
+  width: 4px;
+  height: 48px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-title {
   margin: 0;
-  font-size: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1E293B;
+  line-height: 1.3;
+}
+
+.header-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #64748B;
+  line-height: 1.5;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.class-selector {
+  width: 280px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ===== Card Styles ===== */
+.main-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.main-card :deep(.el-card__header) {
+  padding: 20px 24px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.main-card :deep(.el-card__body) {
+  padding: 24px;
+}
+
+/* ===== Table Styles ===== */
+.data-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table :deep(.el-table__header th) {
+  background: #F8FAFC;
+  color: #475569;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.data-table :deep(.el-table__row:hover > td) {
+  background: #F8FAFC !important;
+}
+
+.sort-number {
+  font-weight: 600;
+  color: #64748B;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.assessment-name {
+  font-weight: 500;
+  color: #1E293B;
+}
+
+.score-value {
+  font-weight: 600;
+  color: #059669;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.objective-tags {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.objective-tag {
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-weight: 500;
+}
+
+/* ===== Dialog Styles ===== */
+.custom-dialog :deep(.el-dialog__header) {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #F1F5F9;
+  margin: 0;
+}
+
+.custom-dialog :deep(.el-dialog__title) {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.custom-dialog :deep(.el-dialog__body) {
+  padding: 24px;
+}
+
+.custom-dialog :deep(.el-dialog__footer) {
+  padding: 16px 24px;
+  border-top: 1px solid #F1F5F9;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .class-selector {
+    width: 100%;
+  }
+
+  .action-buttons {
+    justify-content: flex-start;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .header-accent,
+  .data-table :deep(.el-table__row) {
+    transition: none;
+  }
 }
 </style>

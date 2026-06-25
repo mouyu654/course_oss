@@ -1,75 +1,122 @@
 <template>
   <div class="page-container">
     <!-- 筛选栏 -->
-    <el-card shadow="never" style="margin-bottom:16px">
-      <el-form :inline="true" @submit.prevent="handleSearch">
-        <el-form-item label="年级">
-          <el-select v-model="filters.enrollmentYear" placeholder="全部" clearable style="width:140px">
-            <el-option v-for="y in yearOptions" :key="y" :label="y + ' 级'" :value="y" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="专业">
-          <el-select v-model="filters.majorId" placeholder="全部" clearable filterable style="width:200px">
-            <el-option v-for="m in majorOptions" :key="m.id" :label="m.name" :value="m.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
+    <el-card class="main-card filter-card">
+      <div class="filter-section">
+        <el-form :inline="true" @submit.prevent="handleSearch" class="filter-form">
+          <el-form-item label="年级">
+            <el-select v-model="filters.enrollmentYear" placeholder="全部" clearable class="filter-select">
+              <el-option v-for="y in yearOptions" :key="y" :label="y + ' 级'" :value="y" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="专业">
+            <el-select v-model="filters.majorId" placeholder="全部" clearable filterable class="filter-select-large">
+              <el-option v-for="m in majorOptions" :key="m.id" :label="m.name" :value="m.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>
+              查询
+            </el-button>
+            <el-button @click="handleReset">
+              <el-icon><RefreshRight /></el-icon>
+              重置
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </div>
     </el-card>
 
     <template v-if="dashboard">
       <!-- 顶部：左侧统计 + 右侧饼图 + 计算按钮 -->
-      <el-card shadow="never" style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px">
+      <el-card class="main-card stats-card">
+        <div class="stats-content">
           <!-- 左：统计数字和进度 -->
-          <div style="flex:1;min-width:300px">
-            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px">
-              <span style="font-size:14px;color:#606266">支撑课程计算进度</span>
-              <span style="font-size:30px;font-weight:700;color:#303133">{{ dashboard.lockedCount }}</span>
-              <span style="font-size:16px;color:#909399">/ {{ dashboard.totalCount }} 门</span>
+          <div class="stats-left">
+            <div class="stats-header">
+              <span class="stats-label">支撑课程计算进度</span>
+              <div class="stats-numbers">
+                <span class="stats-current">{{ dashboard.lockedCount }}</span>
+                <span class="stats-total">/ {{ dashboard.totalCount }} 门</span>
+              </div>
             </div>
-            <el-progress :percentage="progressPercent" :status="progressStatus" :stroke-width="20" style="max-width:400px" />
-            <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
-              <el-tag v-if="dashboard.allReady" type="success" effect="dark">所有课程已就绪</el-tag>
-              <el-tag v-else type="warning" effect="dark">尚有 {{ dashboard.totalCount - dashboard.lockedCount }} 门未就绪</el-tag>
-              <el-button type="primary" :loading="computing" :disabled="!canCompute" @click="handleCompute">执行专业级计算</el-button>
+            <el-progress :percentage="progressPercent" :status="progressStatus" :stroke-width="20" class="stats-progress" />
+            <div class="stats-footer">
+              <el-tag v-if="dashboard.allReady" type="success" effect="dark" class="status-tag">
+                <el-icon><CircleCheck /></el-icon>
+                所有课程已就绪
+              </el-tag>
+              <el-tag v-else type="warning" effect="dark" class="status-tag">
+                <el-icon><Warning /></el-icon>
+                尚有 {{ dashboard.totalCount - dashboard.lockedCount }} 门未就绪
+              </el-tag>
+              <el-button type="primary" :loading="computing" :disabled="!canCompute" @click="handleCompute" class="compute-btn">
+                <el-icon><TrendCharts /></el-icon>
+                执行专业级计算
+              </el-button>
             </div>
           </div>
           <!-- 右：饼图 -->
-          <div ref="pieChartRef" style="width:220px;height:200px"></div>
+          <div class="stats-right">
+            <div ref="pieChartRef" class="pie-chart"></div>
+          </div>
         </div>
       </el-card>
 
       <!-- 权重配置校验 -->
-      <el-card v-if="hasWeightIssues" shadow="never" style="margin-bottom:16px">
-        <template #header><span style="font-weight:600;color:#E6A23C">权重配置异常</span></template>
-        <el-alert type="warning" :closable="false" show-icon style="margin-bottom:12px">
+      <el-card v-if="hasWeightIssues" class="main-card warning-card">
+        <template #header>
+          <div class="warning-header">
+            <el-icon class="warning-icon"><WarningFilled /></el-icon>
+            <span class="warning-title">权重配置异常</span>
+          </div>
+        </template>
+        <el-alert type="warning" :closable="false" show-icon class="warning-alert">
           以下指标点的宏观支撑权重之和不为 1.0，请联系专业负责人修正后再执行计算。
         </el-alert>
-        <el-table :data="dashboard.weightStatuses.filter(w => !w.valid)" stripe size="small" style="width:100%">
-          <el-table-column prop="indicatorId" label="指标点ID" width="120" align="center" />
+        <el-table :data="dashboard.weightStatuses.filter(w => !w.valid)" stripe size="small" class="warning-table">
+          <el-table-column prop="indicatorId" label="指标点ID" width="120" align="center">
+            <template #default="{ row }">
+              <span class="indicator-id">{{ row.indicatorId }}</span>
+            </template>
+          </el-table-column>
           <el-table-column label="权重之和" width="120" align="center">
             <template #default="{ row }">
-              <span style="color:#F56C6C;font-weight:600">{{ row.weightSum }}</span>
+              <span class="weight-invalid">{{ row.weightSum }}</span>
             </template>
           </el-table-column>
           <el-table-column label="期望值" width="100" align="center">
-            <template #default>1.0000</template>
+            <template #default>
+              <span class="weight-expected">1.0000</span>
+            </template>
           </el-table-column>
         </el-table>
       </el-card>
 
       <!-- 课程状态明细表 -->
-      <el-card shadow="never">
-        <template #header><span style="font-weight:600">支撑课程状态明细</span></template>
-        <el-table :data="classDetailList" v-loading="loading" stripe style="width:100%">
-          <el-table-column prop="courseName" label="课程名称" min-width="180" show-overflow-tooltip />
+      <el-card class="main-card detail-card">
+        <template #header>
+          <div class="detail-header">
+            <div class="detail-icon">
+              <el-icon><Document /></el-icon>
+            </div>
+            <span class="detail-title">支撑课程状态明细</span>
+          </div>
+        </template>
+        <el-table :data="classDetailList" v-loading="loading" stripe class="detail-table">
+          <el-table-column prop="courseName" label="课程名称" min-width="180" show-overflow-tooltip>
+            <template #default="{ row }">
+              <span class="course-name">{{ row.courseName }}</span>
+            </template>
+          </el-table-column>
           <el-table-column prop="className" label="教学班级" min-width="160" show-overflow-tooltip />
           <el-table-column prop="teacherName" label="主讲教师" width="120" />
-          <el-table-column prop="semesterName" label="学期编码" width="160" />
+          <el-table-column prop="semesterName" label="学期编码" width="160">
+            <template #default="{ row }">
+              <el-tag type="info" effect="plain" size="small">{{ row.semesterName }}</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column label="状态" width="110" align="center">
             <template #default="{ row }">
               <StatusTag :status="row.status" />
@@ -79,7 +126,7 @@
       </el-card>
     </template>
 
-    <el-empty v-if="!loading && !dashboard" description="请选择查询条件以加载宏观看板" />
+    <el-empty v-if="!loading && !dashboard" description="请选择查询条件以加载宏观看板" class="empty-state" />
     <div v-if="loading && !dashboard" v-loading="true" element-loading-text="加载中..." style="min-height:200px" />
   </div>
 </template>
@@ -87,6 +134,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, RefreshRight, CircleCheck, Warning, WarningFilled, TrendCharts, Document } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import { getEnrollmentYears, getGlobalDashboard, triggerGlobalCompute } from '@/api/academic'
 import { getMajors } from '@/api/admin'
@@ -191,8 +239,8 @@ function renderPieChart() {
       itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
       label: { show: true, formatter: '{b}\n{c}门', fontSize: 12 },
       data: [
-        { value: locked, name: '已锁定', itemStyle: { color: '#67C23A' } },
-        { value: unlocked, name: '未提交', itemStyle: { color: '#E6A23C' } }
+        { value: locked, name: '已锁定', itemStyle: { color: '#059669' } },
+        { value: unlocked, name: '未提交', itemStyle: { color: '#D97706' } }
       ]
     }]
   })
@@ -234,3 +282,258 @@ onBeforeUnmount(() => {
   pieChart?.dispose()
 })
 </script>
+
+<style scoped>
+/* ===== Card Styles ===== */
+.main-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+}
+
+.main-card :deep(.el-card__header) {
+  padding: 20px 24px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.main-card :deep(.el-card__body) {
+  padding: 24px;
+}
+
+/* ===== Filter Section ===== */
+.filter-card :deep(.el-card__body) {
+  padding: 16px 24px;
+}
+
+.filter-section {
+  background: #F8FAFC;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid #F1F5F9;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-bottom: 0;
+}
+
+.filter-select {
+  width: 140px;
+}
+
+.filter-select-large {
+  width: 200px;
+}
+
+/* ===== Stats Card ===== */
+.stats-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.stats-left {
+  flex: 1;
+  min-width: 300px;
+}
+
+.stats-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stats-label {
+  font-size: 14px;
+  color: #64748B;
+}
+
+.stats-numbers {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.stats-current {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1E293B;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.stats-total {
+  font-size: 16px;
+  color: #94A3B8;
+}
+
+.stats-progress {
+  max-width: 400px;
+  margin-bottom: 16px;
+}
+
+.stats-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.compute-btn {
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  border: none;
+}
+
+.compute-btn:hover {
+  background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
+}
+
+.stats-right {
+  flex-shrink: 0;
+}
+
+.pie-chart {
+  width: 240px;
+  height: 220px;
+}
+
+/* ===== Warning Card ===== */
+.warning-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.warning-icon {
+  font-size: 20px;
+  color: #D97706;
+}
+
+.warning-title {
+  font-weight: 600;
+  color: #D97706;
+  font-size: 16px;
+}
+
+.warning-alert {
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.warning-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.indicator-id {
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-weight: 600;
+  color: #475569;
+}
+
+.weight-invalid {
+  color: #DC2626;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.weight-expected {
+  color: #059669;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+/* ===== Detail Card ===== */
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563EB;
+  font-size: 18px;
+}
+
+.detail-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.detail-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.detail-table :deep(.el-table__header th) {
+  background: #F8FAFC;
+  color: #475569;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.course-name {
+  font-weight: 500;
+  color: #1E293B;
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+  padding: 60px 0;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .stats-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stats-right {
+    display: flex;
+    justify-content: center;
+  }
+
+  .filter-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-select,
+  .filter-select-large {
+    width: 100%;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .compute-btn,
+  .detail-table :deep(.el-table__row) {
+    transition: none;
+  }
+}
+</style>

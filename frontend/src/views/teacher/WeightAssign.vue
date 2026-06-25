@@ -115,12 +115,18 @@ async function handleSubmit() {
 
 <template>
   <div class="page-container">
-    <el-card>
+    <el-card class="main-card">
       <template #header>
-        <div class="card-header">
-          <h3>内部权重分配</h3>
-          <div style="display: flex; gap: 12px; align-items: center;">
-            <el-select v-model="selectedClassId" placeholder="选择教学班级" style="width: 280px;">
+        <div class="page-header">
+          <div class="header-left">
+            <div class="header-accent" style="background: linear-gradient(180deg, #7C3AED 0%, #8B5CF6 100%);"></div>
+            <div class="header-content">
+              <h3 class="header-title">内部权重分配</h3>
+              <p class="header-subtitle">分配课程目标对毕业要求指标点的支撑权重</p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <el-select v-model="selectedClassId" placeholder="选择教学班级" class="class-selector">
               <el-option
                   v-for="c in myClasses"
                   :key="c.id"
@@ -133,8 +139,10 @@ async function handleSubmit() {
                 :disabled="!selectedClassId || !allValid"
                 :loading="saving"
                 @click="handleSubmit"
+                class="save-button"
             >
-              保存
+              <el-icon><Check /></el-icon>
+              保存权重
             </el-button>
           </div>
         </div>
@@ -146,7 +154,7 @@ async function handleSubmit() {
           <tr>
             <th class="col-label">课程目标</th>
             <th v-for="ind in indicators" :key="ind.id" class="col-header">
-              <div>{{ ind.indicatorNo }}</div>
+              <div class="indicator-no">{{ ind.indicatorNo }}</div>
               <div class="indicator-hint">{{ ind.content }}</div>
             </th>
           </tr>
@@ -169,19 +177,22 @@ async function handleSubmit() {
                   :precision="4"
                   :controls="false"
                   size="small"
-                  style="width: 85px;"
+                  class="weight-input"
                   placeholder="-"
               />
             </td>
           </tr>
           <!-- column sum row -->
           <tr class="sum-row">
-            <td class="col-label sum-label">列合计</td>
+            <td class="col-label sum-label">
+              <span class="sum-icon">Σ</span>
+              列合计
+            </td>
             <td
                 v-for="ind in indicators"
                 :key="ind.id"
                 class="sum-cell"
-                :class="{ 'sum-invalid': !isValidWeight(columnSums[ind.id]) }"
+                :class="{ 'sum-invalid': !isValidWeight(columnSums[ind.id]), 'sum-valid': isValidWeight(columnSums[ind.id]) }"
             >
               {{ columnSums[ind.id] ?? '-' }}
             </td>
@@ -190,24 +201,99 @@ async function handleSubmit() {
         </table>
       </div>
 
-      <el-empty v-else description="请先设定课程目标并配置宏观支撑矩阵" />
+      <div v-else class="empty-state">
+        <el-empty description="请先设定课程目标并配置宏观支撑矩阵" />
+      </div>
     </el-card>
   </div>
 </template>
 
 <style scoped>
-.card-header {
+/* ===== Page Header ===== */
+.page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-}
-.card-header h3 {
-  margin: 0;
-  font-size: 16px;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 4px 0;
 }
 
+.header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.header-accent {
+  width: 4px;
+  height: 48px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1E293B;
+  line-height: 1.3;
+}
+
+.header-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #64748B;
+  line-height: 1.5;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.class-selector {
+  width: 280px;
+}
+
+.save-button {
+  background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
+  border: none;
+}
+
+.save-button:hover {
+  background: linear-gradient(135deg, #6D28D9 0%, #7C3AED 100%);
+}
+
+/* ===== Card Styles ===== */
+.main-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.main-card :deep(.el-card__header) {
+  padding: 20px 24px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.main-card :deep(.el-card__body) {
+  padding: 24px;
+}
+
+/* ===== Matrix Styles ===== */
 .matrix-wrapper {
   overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
 }
 
 .weight-matrix {
@@ -218,8 +304,8 @@ async function handleSubmit() {
 
 .weight-matrix th,
 .weight-matrix td {
-  padding: 10px 8px;
-  border: 1px solid #ebeef5;
+  padding: 12px 10px;
+  border: 1px solid #E2E8F0;
   text-align: center;
   white-space: nowrap;
 }
@@ -231,7 +317,7 @@ async function handleSubmit() {
   white-space: normal;
   position: sticky;
   left: 0;
-  background: #fff;
+  background: #FFFFFF;
   z-index: 1;
 }
 
@@ -242,25 +328,34 @@ async function handleSubmit() {
 }
 
 .col-header {
-  min-width: 90px;
-  background: #f5f7fa;
+  min-width: 100px;
+  background: #F8FAFC;
+}
+
+.indicator-no {
+  font-weight: 600;
+  color: #1E293B;
+  font-size: 13px;
 }
 
 .indicator-hint {
   font-size: 11px;
-  color: #909399;
-  margin-top: 2px;
+  color: #64748B;
+  margin-top: 4px;
   white-space: normal;
   max-width: 120px;
+  line-height: 1.4;
 }
 
 .obj-no {
   font-weight: 600;
-  margin-right: 6px;
+  margin-right: 8px;
+  color: #7C3AED;
+  font-family: 'SF Mono', 'Consolas', monospace;
 }
 
 .obj-desc {
-  color: #606266;
+  color: #475569;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
@@ -269,21 +364,78 @@ async function handleSubmit() {
   vertical-align: middle;
 }
 
+.weight-input {
+  width: 90px;
+}
+
+.weight-input :deep(.el-input__wrapper) {
+  border-radius: 6px;
+}
+
 .sum-row {
-  background-color: #fafafa;
+  background-color: #F8FAFC;
   font-weight: 600;
 }
 
 .sum-label {
-  background: #fafafa !important;
+  background: #F8FAFC !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sum-icon {
+  font-size: 16px;
+  color: #64748B;
 }
 
 .sum-cell {
   font-size: 14px;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.sum-valid {
+  color: #059669;
+  background: #ECFDF5;
 }
 
 .sum-invalid {
-  color: #f56c6c;
-  background: #fef0f0;
+  color: #DC2626;
+  background: #FEF2F2;
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+  padding: 60px 0;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .class-selector {
+    width: 100%;
+  }
+
+  .save-button {
+    width: 100%;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .header-accent,
+  .weight-input :deep(.el-input__wrapper) {
+    transition: none;
+  }
 }
 </style>

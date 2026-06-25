@@ -1,46 +1,79 @@
 <template>
   <div class="page-container">
-    <el-card shadow="never" style="margin-bottom:16px">
-      <el-form :inline="true" @submit.prevent>
-        <el-form-item label="专业" required>
-          <el-select v-model="selectedMajorId" placeholder="请选择专业" filterable clearable style="width:260px">
-            <el-option v-for="m in majorOptions" :key="m.id" :label="m.name" :value="m.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="年级" required>
-          <el-select v-model="selectedEnrollmentYear" placeholder="请选择年级" filterable clearable style="width:220px">
-            <el-option v-for="y in yearOptions" :key="y" :label="y + ' 级'" :value="y" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" :loading="loading" :disabled="!selectedMajorId || !selectedEnrollmentYear" @click="loadData">加载数据</el-button>
-        </el-form-item>
-      </el-form>
+    <!-- 筛选栏 -->
+    <el-card class="main-card filter-card">
+      <div class="filter-section">
+        <el-form :inline="true" @submit.prevent class="filter-form">
+          <el-form-item label="专业" required>
+            <el-select v-model="selectedMajorId" placeholder="请选择专业" filterable clearable class="filter-select-large">
+              <el-option v-for="m in majorOptions" :key="m.id" :label="m.name" :value="m.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="年级" required>
+            <el-select v-model="selectedEnrollmentYear" placeholder="请选择年级" filterable clearable class="filter-select">
+              <el-option v-for="y in yearOptions" :key="y" :label="y + ' 级'" :value="y" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              type="primary"
+              :loading="loading"
+              :disabled="!selectedMajorId || !selectedEnrollmentYear"
+              @click="loadData"
+            >
+              <el-icon><Search /></el-icon>
+              加载数据
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </div>
     </el-card>
 
-    <el-row :gutter="16">
+    <el-row :gutter="20">
       <el-col :span="12">
-        <el-card shadow="never" style="margin-bottom:16px">
-          <template #header><span>专业达成度雷达图</span></template>
-          <div ref="chartRef" style="width:100%;height:400px"></div>
-          <el-empty v-if="!radarData && !loading" description="点击加载数据查看雷达图" />
+        <el-card class="main-card chart-card">
+          <template #header>
+            <div class="card-header">
+              <div class="card-icon">
+                <el-icon><TrendCharts /></el-icon>
+              </div>
+              <span class="card-title">专业达成度雷达图</span>
+            </div>
+          </template>
+          <div ref="chartRef" class="radar-chart"></div>
+          <el-empty v-if="!radarData && !loading" description="点击加载数据查看雷达图" class="empty-state" />
         </el-card>
       </el-col>
       <el-col :span="12">
-        <el-card shadow="never" style="margin-bottom:16px">
-          <template #header><span>各指标点达成度</span></template>
-          <el-table :data="indicatorTable" stripe border size="small" style="width:100%">
-            <el-table-column prop="indicatorNo" label="指标点" width="100" />
-            <el-table-column prop="content" label="描述" show-overflow-tooltip />
+        <el-card class="main-card table-card">
+          <template #header>
+            <div class="card-header">
+              <div class="card-icon" style="background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); color: #059669;">
+                <el-icon><Aim /></el-icon>
+              </div>
+              <span class="card-title">各指标点达成度</span>
+            </div>
+          </template>
+          <el-table :data="indicatorTable" stripe border size="small" class="indicator-table">
+            <el-table-column prop="indicatorNo" label="指标点" width="100" align="center">
+              <template #default="{ row }">
+                <span class="indicator-no">{{ row.indicatorNo }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="content" label="描述" show-overflow-tooltip>
+              <template #default="{ row }">
+                <span class="indicator-content">{{ row.content }}</span>
+              </template>
+            </el-table-column>
             <el-table-column label="达成度" width="120" align="center">
               <template #default="{ row }">
-                <el-tag :type="row.achievement >= 0.7 ? 'success' : row.achievement >= 0.6 ? 'warning' : 'danger'" size="small">
+                <span :class="['achievement-value', row.achievement >= 0.7 ? 'text-pass' : row.achievement >= 0.6 ? 'text-warning' : 'text-fail']">
                   {{ row.achievement.toFixed(4) }}
-                </el-tag>
+                </span>
               </template>
             </el-table-column>
           </el-table>
-          <el-empty v-if="!indicatorTable.length && !loading" description="暂无数据" />
+          <el-empty v-if="!indicatorTable.length && !loading" description="暂无数据" class="empty-state" />
         </el-card>
       </el-col>
     </el-row>
@@ -49,6 +82,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { Search, TrendCharts, Aim } from '@element-plus/icons-vue'
 import { getMajorRadar, getGlobalResults, getEnrollmentYears } from '@/api/academic'
 import { getGradReqs } from '@/api/director'
 import { getMajors } from '@/api/admin'
@@ -141,12 +175,165 @@ function renderChart() {
     radar: {
       indicator: data.indicator || [],
       shape: 'polygon',
-      splitNumber: 5
+      splitNumber: 5,
+      axisName: { fontSize: 13, color: '#1E293B' },
+      splitLine: { lineStyle: { color: '#E2E8F0' } },
+      splitArea: { areaStyle: { color: ['#F8FAFC', '#FFFFFF'] } }
     },
     series: [{
       type: 'radar',
-      data: [{ value: data.value || [], name: '专业达成度', areaStyle: { opacity: 0.15 } }]
+      data: [{
+        value: data.value || [],
+        name: '专业达成度',
+        areaStyle: { color: 'rgba(37, 99, 235, 0.15)' },
+        lineStyle: { color: '#2563EB', width: 2 },
+        itemStyle: { color: '#2563EB' }
+      }]
     }]
   })
 }
 </script>
+
+<style scoped>
+/* ===== Filter Card ===== */
+.filter-card :deep(.el-card__body) {
+  padding: 16px 24px;
+}
+
+.filter-section {
+  background: #F8FAFC;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid #F1F5F9;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-bottom: 0;
+}
+
+.filter-select {
+  width: 160px;
+}
+
+.filter-select-large {
+  width: 260px;
+}
+
+/* ===== Card Styles ===== */
+.main-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+}
+
+.main-card :deep(.el-card__header) {
+  padding: 16px 20px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.main-card :deep(.el-card__body) {
+  padding: 20px;
+}
+
+/* ===== Card Header ===== */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563EB;
+  font-size: 18px;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+/* ===== Radar Chart ===== */
+.radar-chart {
+  width: 100%;
+  height: 400px;
+}
+
+/* ===== Indicator Table ===== */
+.indicator-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.indicator-table :deep(.el-table__header th) {
+  background: #F8FAFC;
+  color: #475569;
+  font-weight: 600;
+}
+
+.indicator-no {
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-weight: 600;
+  color: #059669;
+}
+
+.indicator-content {
+  color: #1E293B;
+}
+
+.achievement-value {
+  font-weight: 600;
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.text-pass { color: #059669; }
+.text-warning { color: #D97706; }
+.text-fail { color: #DC2626; }
+
+/* ===== Empty State ===== */
+.empty-state {
+  padding: 40px 0;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .filter-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-select,
+  .filter-select-large {
+    width: 100%;
+  }
+
+  :deep(.el-col-12) {
+    width: 100%;
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .header-accent,
+  .indicator-table :deep(.el-table__row) {
+    transition: none;
+  }
+}
+</style>
