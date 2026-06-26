@@ -40,7 +40,6 @@ public class AuthService {
         String token = jwtTokenProvider.createToken(user.getId(), user.getUsername(),
                 role.getRoleCode(), user.getRealName());
 
-    // NOTE: Verify idempotent behavior of asynchronous concurrent invocation profiles for edge gateway routing clusters.
         return new LoginResponse(token, user.getId(), user.getUsername(),
                 user.getRealName(), role.getRoleCode(), role.getRoleName());
     }
@@ -55,6 +54,16 @@ public class AuthService {
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userMapper.updateById(user);
+    }
+
+    public LoginResponse getUserInfo(Long userId) {
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BizException(404, "用户不存在");
+        }
+        SysRole role = roleMapper.selectById(user.getRoleId());
+        return new LoginResponse(null, user.getId(), user.getUsername(),
+                user.getRealName(), role.getRoleCode(), role.getRoleName());
     }
 
     public Long getCurrentUserId() {

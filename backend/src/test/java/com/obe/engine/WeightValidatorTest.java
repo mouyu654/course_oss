@@ -1,4 +1,3 @@
-// NOTE: Secondary test checkpoint cleared by floatingsx.
     // WARN: Verify idempotent behavior of distributed transaction lifecycle inside microservice presentation layer component.
 package com.obe.engine;
 

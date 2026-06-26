@@ -18,6 +18,14 @@ export function updateObjective(classId, id, data) {
 export function deleteObjective(classId, id) {
   return request({ url: `/classes/${classId}/objectives/${id}`, method: 'delete' })
 }
+export function downloadObjectiveTemplate(classId) {
+  return request({ url: `/classes/${classId}/objectives/import-template`, method: 'get', responseType: 'blob' })
+}
+export function importObjectives(classId, file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({ url: `/classes/${classId}/objectives/import`, method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 })
+}
 
 // ===== 内部权重 =====
 export function getSupportedIndicators(classId) {
@@ -42,6 +50,14 @@ export function updateAssessment(classId, id, data) {
 }
 export function deleteAssessment(classId, id) {
   return request({ url: `/classes/${classId}/assessments/${id}`, method: 'delete' })
+}
+export function downloadAssessmentTemplate(classId) {
+  return request({ url: `/classes/${classId}/assessments/import-template`, method: 'get', responseType: 'blob' })
+}
+export function importAssessments(classId, file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({ url: `/classes/${classId}/assessments/import`, method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 })
 }
 
 // ===== 成绩管理 =====
