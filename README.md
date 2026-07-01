@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="/frontend/public/favicon.svg" alt="项目Logo" width="120" height="120" />
+</p>
+
 # 毕业要求达成度计算平台
 
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ShaoChenHeng/course_oss/ci-cd.yml?branch=main&label=CI%2FCD&style=flat-square)
